@@ -143,11 +143,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#141414] text-white relative">
+    <div className="min-h-screen bg-[#141414] text-white relative select-none">
       <StarryBackground />
-      
-      {/* ViewerCount is now positioned at the top with a higher z-index */}
-      <ViewerCount />
       
       <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -277,7 +274,7 @@ const Index = () => {
                   }
                 }}
                 placeholder="Search movies and TV shows..."
-                className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none"
+                className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none select-text"
               />
               
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 animate-fade-in">
@@ -338,7 +335,18 @@ const Index = () => {
             </div>
           ))}
         </div>
+
+        <footer className="mt-12 pb-20 text-center text-sm text-gray-500">
+          <p>
+            © 2024{' '}
+            <span className="hover:text-[#ea384c] transition-colors duration-300">
+              aidenwrld
+            </span>
+          </p>
+        </footer>
       </main>
+
+      <ViewerCount />
     </div>
   );
 };
