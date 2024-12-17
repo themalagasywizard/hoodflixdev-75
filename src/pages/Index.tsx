@@ -49,6 +49,13 @@ const Index = () => {
   useEffect(() => {
     showAllCategories();
     
+    // Initialize dyslexic font preference
+    const storedDyslexicPref = localStorage.getItem('dyslexicFont') === 'true';
+    setIsDyslexicFont(storedDyslexicPref);
+    if (storedDyslexicPref) {
+      document.body.classList.add('dyslexic');
+    }
+
     const interval = setInterval(() => {
       setViewerCount(prev => prev + Math.floor(Math.random() * 3));
     }, 5000);
@@ -142,6 +149,18 @@ const Index = () => {
     }
   };
 
+  const toggleDyslexicFont = () => {
+    const newValue = !isDyslexicFont;
+    setIsDyslexicFont(newValue);
+    localStorage.setItem('dyslexicFont', String(newValue));
+    document.body.classList.toggle('dyslexic');
+  };
+
+  const changeLanguage = (lang: string) => {
+    setCurrentLanguage(lang);
+    // Language change logic will be handled by translations in index.html
+  };
+
   return (
     <div className="min-h-screen bg-[#141414] text-white relative select-none">
       <StarryBackground />
@@ -194,7 +213,7 @@ const Index = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-[#141414] rounded-md shadow-lg py-1 border border-[#2a2a2a]">
                   <button
                     onClick={() => {
-                      setCurrentLanguage('en');
+                      changeLanguage('en');
                       setShowSettings(false);
                     }}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
@@ -203,7 +222,7 @@ const Index = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setCurrentLanguage('es');
+                      changeLanguage('es');
                       setShowSettings(false);
                     }}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
@@ -212,7 +231,7 @@ const Index = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setCurrentLanguage('ru');
+                      changeLanguage('ru');
                       setShowSettings(false);
                     }}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
@@ -221,7 +240,7 @@ const Index = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setCurrentLanguage('sl');
+                      changeLanguage('sl');
                       setShowSettings(false);
                     }}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
@@ -230,7 +249,7 @@ const Index = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setCurrentLanguage('tr');
+                      changeLanguage('tr');
                       setShowSettings(false);
                     }}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
@@ -239,12 +258,12 @@ const Index = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setIsDyslexicFont(!isDyslexicFont);
+                      toggleDyslexicFont();
                       setShowSettings(false);
                     }}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
-                    Dyslexic Font
+                    {isDyslexicFont ? 'Disable' : 'Enable'} Dyslexic Font
                   </button>
                 </div>
               )}
@@ -336,7 +355,7 @@ const Index = () => {
           ))}
         </div>
 
-        <footer className="mt-12 pb-20 text-center text-sm text-gray-500">
+        <footer className="mt-8 pb-12 text-center text-sm text-gray-500">
           <p>
             © 2024{' '}
             <span className="hover:text-[#ea384c] transition-colors duration-300">

@@ -39,7 +39,7 @@ const ViewerCount = () => {
   }, []);
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[9999] bg-black/80 px-4 py-2 rounded-full
+    <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[9999] bg-black/80 px-4 py-2 rounded-full
                     text-white text-sm backdrop-blur-sm border border-[#ea384c]/30
                     animate-pulse shadow-[0_0_15px_rgba(234,56,76,0.3)]">
       {count} people watching worldwide
