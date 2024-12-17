@@ -94,6 +94,11 @@
     @apply transition-all duration-200 hover:bg-[#ea384c]/10;
   }
 
+  /* Search screen enhancements */
+  #search-screen {
+    @apply bg-gradient-to-b from-black to-black bg-opacity-95 backdrop-blur-md;
+  }
+
   /* Keyframe Animations */
   @keyframes fadeInUp {
     from {
@@ -135,11 +140,6 @@
     animation: pulse 2s infinite;
     backdrop-filter: blur(5px);
     border: 1px solid rgba(234, 56, 76, 0.3);
-  }
-
-  /* Search screen enhancements */
-  #search-screen {
-    @apply bg-gradient-to-b from-black/97 to-black/95 backdrop-blur-md;
   }
 
   /* Category headers */
