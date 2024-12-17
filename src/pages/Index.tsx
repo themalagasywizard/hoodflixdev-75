@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Search, Settings } from 'lucide-react';
-import { toast } from "@/hooks/use-toast";
-
-interface Category {
-  [key: string]: string;
-}
 
 interface Movie {
   id: string;
   title: string;
+  name?: string;
   poster_path: string;
+  media_type?: string;
 }
 
 const Index = () => {
@@ -18,14 +15,14 @@ const Index = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewerCount, setViewerCount] = useState(0);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [viewerCount, setViewerCount] = useState(500);
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
-  const categories: Category = {
+  const categories = {
     '28': 'Action',
     '12': 'Adventure',
     '16': 'Animation',
@@ -47,64 +44,6 @@ const Index = () => {
     '37': 'Western'
   };
 
-  const translations = {
-    en: {
-      home: 'Home',
-      search: 'Search movies and TV shows...',
-      action: 'Action',
-      adventure: 'Adventure',
-      animation: 'Animation',
-      comedy: 'Comedy',
-      crime: 'Crime',
-      documentary: 'Documentary',
-      drama: 'Drama',
-      family: 'Family',
-      fantasy: 'Fantasy',
-      history: 'History',
-      horror: 'Horror',
-      music: 'Music',
-      mystery: 'Mystery',
-      romance: 'Romance',
-      scienceFiction: 'Science Fiction',
-      tvMovie: 'TV Movie',
-      thriller: 'Thriller',
-      war: 'War',
-      western: 'Western',
-      viewers: 'people watching worldwide',
-      settings: 'Settings',
-      language: 'Language',
-      dyslexicFont: 'Dyslexic Font'
-    },
-    es: {
-      home: 'Inicio',
-      search: 'Buscar películas y series...',
-      action: 'Acción',
-      adventure: 'Aventura',
-      animation: 'Animación',
-      comedy: 'Comedia',
-      crime: 'Crimen',
-      documentary: 'Documental',
-      drama: 'Drama',
-      family: 'Familia',
-      fantasy: 'Fantasía',
-      history: 'Historia',
-      horror: 'Horror',
-      music: 'Música',
-      mystery: 'Misterio',
-      romance: 'Romance',
-      scienceFiction: 'Ciencia Ficción',
-      tvMovie: 'Película de TV',
-      thriller: 'Suspenso',
-      war: 'Guerra',
-      western: 'Western',
-      viewers: 'personas viendo en todo el mundo',
-      settings: 'Configuraciones',
-      language: 'Idioma',
-      dyslexicFont: 'Fuente Disléxica'
-    },
-    // Add other language translations similarly
-  };
-
   useEffect(() => {
     // Initialize to home tab
     showAllCategories();
@@ -119,11 +58,6 @@ const Index = () => {
 
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    // Apply dyslexic font
-    document.body.classList.toggle('dyslexic', isDyslexicFont);
-  }, [isDyslexicFont]);
 
   const fetchMovies = async () => {
     try {
@@ -142,42 +76,66 @@ const Index = () => {
     fetchMovies();
   };
 
-  const filterCategory = (categoryId: string) => {
+  const filterCategory = async (categoryId: string) => {
     setSelectedCategory(categoryId);
-    // Implementation for filtering by category
-  };
-
-  const toggleSearch = () => {
-    setShowSearch(!showSearch);
-    if (!showSearch) {
-      setSearchQuery('');
-      setSearchResults([]);
+    try {
+      const [moviesResponse, tvShowsResponse] = await Promise.all([
+        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=1`),
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&page=1`)
+      ]);
+      
+      const moviesData = await moviesResponse.json();
+      const tvShowsData = await tvShowsResponse.json();
+      
+      setMovies([...moviesData.results, ...tvShowsData.results]);
+    } catch (error) {
+      console.error('Error fetching category:', error);
     }
   };
 
-  const toggleSettings = () => {
-    setShowSettings(!showSettings);
+  const handleSearch = async (query: string) => {
+    if (query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${query}&page=1`
+      );
+      const data = await response.json();
+      setSearchResults(data.results.filter((result: Movie) => 
+        (result.media_type === 'movie' || result.media_type === 'tv') && result.poster_path
+      ));
+    } catch (error) {
+      console.error('Error searching:', error);
+    }
   };
 
-  const toggleDyslexicFont = () => {
-    setIsDyslexicFont(!isDyslexicFont);
-    toast({
-      title: isDyslexicFont ? "Dyslexic font disabled" : "Dyslexic font enabled",
-      duration: 2000
-    });
-  };
+  const playMedia = (id: string, type: string) => {
+    const url = type === 'movie' 
+      ? `https://vidsrc.me/embed/movie?tmdb=${id}` 
+      : `https://vidsrc.me/embed/tv?tmdb=${id}`;
+    
+    // Create iframe element
+    const iframe = document.createElement('iframe');
+    iframe.src = url;
+    iframe.style.width = '100%';
+    iframe.style.height = '600px';
+    iframe.frameBorder = '0';
+    iframe.allowFullscreen = true;
 
-  const changeLanguage = (lang: string) => {
-    setCurrentLanguage(lang);
-    toast({
-      title: `Language changed to ${translations[lang].language}`,
-      duration: 2000
-    });
+    // Find or create video container
+    const videoContainer = document.getElementById('video-container');
+    if (videoContainer) {
+      videoContainer.innerHTML = '';
+      videoContainer.appendChild(iframe);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#141414] text-white">
-      {/* Header section */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
@@ -192,7 +150,7 @@ const Index = () => {
                 onClick={showAllCategories}
                 className="text-white hover:text-[#ea384c] transition-all duration-300"
               >
-                {translations[currentLanguage].home}
+                Home
               </button>
               {Object.entries(categories).map(([id, name]) => (
                 <button
@@ -200,7 +158,7 @@ const Index = () => {
                   onClick={() => filterCategory(id)}
                   className="text-white hover:text-[#ea384c] transition-all duration-300"
                 >
-                  {translations[currentLanguage][name.toLowerCase()] || name}
+                  {name}
                 </button>
               ))}
             </div>
@@ -208,7 +166,7 @@ const Index = () => {
 
           <div className="flex items-center space-x-4">
             <button 
-              onClick={toggleSearch}
+              onClick={() => setShowSearch(!showSearch)}
               className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
             >
               <Search className="w-5 h-5" />
@@ -216,7 +174,7 @@ const Index = () => {
             
             <div className="relative">
               <button 
-                onClick={toggleSettings}
+                onClick={() => setShowSettings(!showSettings)}
                 className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
               >
                 <Settings className="w-5 h-5" />
@@ -227,17 +185,17 @@ const Index = () => {
                   {['en', 'es', 'ru', 'sl', 'tr'].map(lang => (
                     <button
                       key={lang}
-                      onClick={() => changeLanguage(lang)}
+                      onClick={() => setCurrentLanguage(lang)}
                       className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)]"
                     >
-                      {translations[lang].language}
+                      {lang.toUpperCase()}
                     </button>
                   ))}
                   <button
-                    onClick={toggleDyslexicFont}
+                    onClick={() => setIsDyslexicFont(!isDyslexicFont)}
                     className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)]"
                   >
-                    {translations[currentLanguage].dyslexicFont}
+                    Dyslexic Font
                   </button>
                 </div>
               )}
@@ -246,35 +204,75 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="container mx-auto pt-20 px-4">
+        <div id="video-container" className="mb-8"></div>
+        
+        {showSearch && (
+          <div className="fixed inset-0 bg-black/95 z-50 p-4">
+            <div className="max-w-3xl mx-auto pt-20">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleSearch(e.target.value);
+                }}
+                placeholder="Search movies and TV shows..."
+                className="w-full p-4 bg-white/10 rounded-lg text-white placeholder:text-white/50"
+              />
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8">
+                {searchResults.map((result) => (
+                  <div 
+                    key={result.id}
+                    className="relative group transition-transform duration-300 hover:scale-105"
+                    onClick={() => playMedia(result.id, result.media_type || 'movie')}
+                  >
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${result.poster_path}`}
+                      alt={result.title || result.name}
+                      className="w-full rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm">
+                        {result.title || result.name}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {movies.map(movie => (
             <div 
               key={movie.id}
               className="relative group transition-transform duration-300 hover:scale-105"
+              onClick={() => playMedia(movie.id, movie.media_type || 'movie')}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
-                            opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <img
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                alt={movie.title}
-                className="w-full h-auto rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
+                alt={movie.title || movie.name}
+                className="w-full rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
                          transition-shadow duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
               />
-              <div className="absolute bottom-0 left-0 right-0 p-2 text-white text-center 
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="text-sm font-medium">{movie.title}</p>
+                <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm">
+                  {movie.title || movie.name}
+                </p>
               </div>
             </div>
           ))}
         </div>
       </main>
 
-      {/* Viewer count */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 px-4 py-2 rounded-full
                     text-white text-sm animate-fade-in">
-        {viewerCount} {translations[currentLanguage].viewers}
+        {viewerCount} people watching worldwide
       </div>
     </div>
   );
