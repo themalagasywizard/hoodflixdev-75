@@ -1,12 +1,45 @@
 import { useState, useEffect } from 'react';
-import { toast } from "@/components/ui/use-toast";
+import { Search, Settings } from 'lucide-react';
+import { toast } from "@/hooks/use-toast";
+
+interface Category {
+  [key: string]: string;
+}
 
 const Index = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isDyslexicFont, setIsDyslexicFont] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [viewerCount, setViewerCount] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Translations object
+  const apiKey = '650ff50a48a7379fd245c173ad422ff8';
+
+  const categories: Category = {
+    '28': 'Action',
+    '12': 'Adventure',
+    '16': 'Animation',
+    '35': 'Comedy',
+    '80': 'Crime',
+    '99': 'Documentary',
+    '18': 'Drama',
+    '10751': 'Family',
+    '14': 'Fantasy',
+    '36': 'History',
+    '27': 'Horror',
+    '10402': 'Music',
+    '9648': 'Mystery',
+    '10749': 'Romance',
+    '878': 'Science Fiction',
+    '10770': 'TV Movie',
+    '53': 'Thriller',
+    '10752': 'War',
+    '37': 'Western'
+  };
+
   const translations = {
     en: {
       home: 'Home',
@@ -36,12 +69,31 @@ const Index = () => {
       dyslexicFont: 'Dyslexic Font'
     },
     es: {
-      // Spanish translations
       home: 'Inicio',
       search: 'Buscar películas y series...',
       action: 'Acción',
       adventure: 'Aventura',
-      // ... add all other translations
+      animation: 'Animación',
+      comedy: 'Comedia',
+      crime: 'Crimen',
+      documentary: 'Documental',
+      drama: 'Drama',
+      family: 'Familia',
+      fantasy: 'Fantasía',
+      history: 'Historia',
+      horror: 'Horror',
+      music: 'Música',
+      mystery: 'Misterio',
+      romance: 'Romance',
+      scienceFiction: 'Ciencia Ficción',
+      tvMovie: 'Película de TV',
+      thriller: 'Suspenso',
+      war: 'Guerra',
+      western: 'Western',
+      viewers: 'personas viendo en todo el mundo',
+      settings: 'Configuraciones',
+      language: 'Idioma',
+      dyslexicFont: 'Fuente Disléxica'
     },
     // Add other language translations similarly
   };
@@ -50,7 +102,7 @@ const Index = () => {
     // Initialize to home tab
     showAllCategories();
     
-    // Start viewer count simulation
+    // Simulate viewer count updates
     const interval = setInterval(() => {
       setViewerCount(prev => prev + Math.floor(Math.random() * 3));
     }, 5000);
@@ -62,6 +114,28 @@ const Index = () => {
     // Apply dyslexic font
     document.body.classList.toggle('dyslexic', isDyslexicFont);
   }, [isDyslexicFont]);
+
+  const showAllCategories = () => {
+    setSelectedCategory('all');
+    // Implementation for showing all categories
+  };
+
+  const filterCategory = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    // Implementation for filtering by category
+  };
+
+  const toggleSearch = () => {
+    setShowSearch(!showSearch);
+    if (!showSearch) {
+      setSearchQuery('');
+      setSearchResults([]);
+    }
+  };
+
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
+  };
 
   const toggleDyslexicFont = () => {
     setIsDyslexicFont(!isDyslexicFont);
@@ -90,17 +164,18 @@ const Index = () => {
           />
           
           <nav className="flex-1 mx-8 overflow-x-auto scrollbar-hide">
-            {/* Navigation links with hover animation */}
             <div className="flex space-x-6">
+              <button
+                onClick={showAllCategories}
+                className="text-white hover:text-[#ea384c] transition-all duration-300"
+              >
+                {translations[currentLanguage].home}
+              </button>
               {Object.entries(categories).map(([id, name]) => (
                 <button
                   key={id}
                   onClick={() => filterCategory(id)}
-                  className="text-white hover:text-[#ea384c] transition-all duration-300 
-                           relative after:content-[''] after:absolute after:bottom-0 after:left-0 
-                           after:w-full after:h-0.5 after:bg-[#ea384c] after:scale-x-0 
-                           after:origin-bottom-right hover:after:scale-x-100 
-                           hover:after:origin-bottom-left after:transition-transform"
+                  className="text-white hover:text-[#ea384c] transition-all duration-300"
                 >
                   {translations[currentLanguage][name.toLowerCase()] || name}
                 </button>
@@ -108,13 +183,12 @@ const Index = () => {
             </div>
           </nav>
 
-          {/* Controls */}
           <div className="flex items-center space-x-4">
             <button 
               onClick={toggleSearch}
               className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
             >
-              <SearchIcon className="w-5 h-5" />
+              <Search className="w-5 h-5" />
             </button>
             
             <div className="relative">
@@ -122,10 +196,9 @@ const Index = () => {
                 onClick={toggleSettings}
                 className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
               >
-                <SettingsIcon className="w-5 h-5" />
+                <Settings className="w-5 h-5" />
               </button>
               
-              {/* Settings dropdown */}
               {showSettings && (
                 <div className="absolute right-0 mt-2 w-48 bg-black/90 rounded-md shadow-lg py-1">
                   {['en', 'es', 'ru', 'sl', 'tr'].map(lang => (
@@ -153,6 +226,7 @@ const Index = () => {
       {/* Main content */}
       <main className="container mx-auto pt-20 px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {/* Movie grid with red glow effect */}
           {movies.map(movie => (
             <div 
               key={movie.id}
