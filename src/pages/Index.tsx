@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Settings } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
+import { translateText, supportedLanguages } from '../utils/translate';
 
 interface Movie {
   id: string;
@@ -156,9 +157,16 @@ const Index = () => {
     document.body.classList.toggle('dyslexic');
   };
 
-  const changeLanguage = (lang: string) => {
+  const changeLanguage = async (lang: string) => {
     setCurrentLanguage(lang);
-    // Language change logic will be handled by translations in index.html
+    const elementsToTranslate = document.querySelectorAll('[data-translate]');
+    for (const element of elementsToTranslate) {
+      const key = element.getAttribute('data-translate');
+      if (key) {
+        const translatedText = await translateText(key, 'auto', lang);
+        element.textContent = translatedText;
+      }
+    }
   };
 
   return (
@@ -211,51 +219,13 @@ const Index = () => {
               
               {showSettings && (
                 <div className="absolute right-0 mt-2 w-48 bg-[#141414] rounded-md shadow-lg py-1 border border-[#2a2a2a]">
-                  <button
-                    onClick={() => {
-                      changeLanguage('en');
+                  <LanguageSelector 
+                    currentLanguage={currentLanguage} 
+                    onLanguageChange={(lang) => {
+                      changeLanguage(lang);
                       setShowSettings(false);
-                    }}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
-                  >
-                    English (United States)
-                  </button>
-                  <button
-                    onClick={() => {
-                      changeLanguage('es');
-                      setShowSettings(false);
-                    }}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
-                  >
-                    Español (Spanish)
-                  </button>
-                  <button
-                    onClick={() => {
-                      changeLanguage('ru');
-                      setShowSettings(false);
-                    }}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
-                  >
-                    Русский (Russian)
-                  </button>
-                  <button
-                    onClick={() => {
-                      changeLanguage('sl');
-                      setShowSettings(false);
-                    }}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
-                  >
-                    Slovenščina (Slovenian)
-                  </button>
-                  <button
-                    onClick={() => {
-                      changeLanguage('tr');
-                      setShowSettings(false);
-                    }}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
-                  >
-                    Türkçe (Turkish)
-                  </button>
+                    }} 
+                  />
                   <button
                     onClick={() => {
                       toggleDyslexicFont();
@@ -276,7 +246,7 @@ const Index = () => {
         <div id="video-container" className="mb-8"></div>
         
         {showSearch && (
-          <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4">
+          <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4 overflow-y-auto">
             <div className="max-w-5xl mx-auto pt-20">
               <input
                 type="text"
@@ -292,11 +262,11 @@ const Index = () => {
                     setSearchResults([]);
                   }
                 }}
-                placeholder="Search movies and TV shows..."
+                placeholder={translations[currentLanguage]?.search || "Search movies and TV shows..."}
                 className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none select-text"
               />
               
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 animate-fade-in">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 pb-20 animate-fade-in">
                 {searchResults.map((result) => (
                   <div 
                     key={result.id}
