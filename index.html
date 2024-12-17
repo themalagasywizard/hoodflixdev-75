@@ -273,7 +273,7 @@
             localStorage.setItem('dyslexicFont', document.body.classList.contains('dyslexic'));
         }
 
-        // Simulated viewer count
+        // Simulated viewer count (since Firebase config is missing)
         let viewerCount = Math.floor(Math.random() * 1000) + 500;
         
         function updateViewerCount() {
@@ -281,14 +281,6 @@
             const currentLang = document.documentElement.lang || 'en';
             document.getElementById('visit-count').textContent = 
                 `${viewerCount} ${translations[currentLang].watching}`;
-        }
-
-        // Show all categories function
-        function showAllCategories() {
-            const categories = document.querySelectorAll('.category-section');
-            categories.forEach(category => {
-                category.style.display = 'block';
-            });
         }
 
         // Initialize
@@ -299,12 +291,15 @@
                 document.body.classList.add('dyslexic');
             }
 
-            // Start on home tab by showing all categories
+            // Start on home tab
             showAllCategories();
             
             // Start viewer count updates
             setInterval(updateViewerCount, 5000);
             updateViewerCount();
+
+            // Block ads
+            blockAds();
 
             // Add translation attributes
             document.querySelectorAll('nav a').forEach(link => {

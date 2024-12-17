@@ -45,12 +45,6 @@ const Index = () => {
   };
 
   useEffect(() => {
-    // Add stagger effect to movie items
-    const movieItems = document.querySelectorAll('.result-item');
-    movieItems.forEach((item, index) => {
-      (item as HTMLElement).style.animationDelay = `${index * 100}ms`;
-    });
-
     // Initialize to home tab
     showAllCategories();
     
@@ -153,52 +147,29 @@ const Index = () => {
     }
   };
 
-  const displayMovies = (movies: Movie[]) => {
-    return movies.map((movie, index) => (
-      <div
-        key={`${movie.id}-${index}`}
-        className="result-item"
-        style={{
-          animationDelay: `${index * 50}ms`
-        }}
-        onClick={() => {
-          playMedia(movie.id, movie.media_type || 'movie');
-          setShowSearch(false);
-        }}
-      >
-        <img
-          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-          alt={movie.title || movie.name}
-          className="w-full rounded-lg transition-all duration-300"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm">
-            {movie.title || movie.name}
-          </p>
-        </div>
-      </div>
-    ));
-  };
-
   return (
     <div className="min-h-screen bg-[#141414] text-white">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
             src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
             alt="Hoodflix" 
-            className="h-8 md:h-10 transition-transform duration-300 hover:scale-105"
+            className="h-8 md:h-10"
           />
           
           <nav className="flex-1 mx-8 overflow-x-auto scrollbar-hide">
             <div className="flex space-x-6">
+              <button
+                onClick={showAllCategories}
+                className="text-white hover:text-[#ea384c] transition-all duration-300"
+              >
+                Home
+              </button>
               {Object.entries(categories).map(([id, name]) => (
                 <button
                   key={id}
                   onClick={() => filterCategory(id)}
-                  className="nav-link text-white hover:text-[#ea384c] transition-all duration-300"
+                  className="text-white hover:text-[#ea384c] transition-all duration-300"
                 >
                   {name}
                 </button>
@@ -223,13 +194,13 @@ const Index = () => {
               </button>
               
               {showSettings && (
-                <div className="absolute right-0 mt-2 w-48 settings-dropdown rounded-md shadow-lg py-1 border border-[#2a2a2a]">
+                <div className="absolute right-0 mt-2 w-48 bg-[#141414] rounded-md shadow-lg py-1 border border-[#2a2a2a]">
                   <button
                     onClick={() => {
                       setCurrentLanguage('en');
                       setShowSettings(false);
                     }}
-                    className="block w-full px-4 py-2 text-sm text-white settings-option text-left"
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     English (United States)
                   </button>
@@ -238,7 +209,7 @@ const Index = () => {
                       setCurrentLanguage('es');
                       setShowSettings(false);
                     }}
-                    className="block w-full px-4 py-2 text-sm text-white settings-option text-left"
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     Español (Spanish)
                   </button>
@@ -247,7 +218,7 @@ const Index = () => {
                       setCurrentLanguage('ru');
                       setShowSettings(false);
                     }}
-                    className="block w-full px-4 py-2 text-sm text-white settings-option text-left"
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     Русский (Russian)
                   </button>
@@ -256,7 +227,7 @@ const Index = () => {
                       setCurrentLanguage('sl');
                       setShowSettings(false);
                     }}
-                    className="block w-full px-4 py-2 text-sm text-white settings-option text-left"
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     Slovenščina (Slovenian)
                   </button>
@@ -265,7 +236,7 @@ const Index = () => {
                       setCurrentLanguage('tr');
                       setShowSettings(false);
                     }}
-                    className="block w-full px-4 py-2 text-sm text-white settings-option text-left"
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     Türkçe (Turkish)
                   </button>
@@ -274,7 +245,7 @@ const Index = () => {
                       setIsDyslexicFont(!isDyslexicFont);
                       setShowSettings(false);
                     }}
-                    className="block w-full px-4 py-2 text-sm text-white settings-option text-left"
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     Dyslexic Font
                   </button>
@@ -288,13 +259,87 @@ const Index = () => {
       <main className="container mx-auto pt-20">
         <div id="video-container" className="mb-8"></div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-          {displayMovies(movies)}
+        {showSearch && (
+          <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4">
+            <div className="max-w-5xl mx-auto pt-20">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  handleSearch(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setShowSearch(false);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }
+                }}
+                placeholder="Search movies and TV shows..."
+                className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none"
+              />
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 animate-fade-in">
+                {searchResults.map((result) => (
+                  <div 
+                    key={result.id}
+                    className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
+                    onClick={() => {
+                      playMedia(result.id, result.media_type || 'movie');
+                      setShowSearch(false);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                  >
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${result.poster_path}`}
+                      alt={result.title || result.name}
+                      className="w-full rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                                  opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm">
+                        {result.title || result.name}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 animate-fade-in">
+          {movies.map((movie, index) => (
+            <div 
+              key={`${movie.id}-${index}`}
+              className="relative group transition-transform duration-300 hover:scale-105 animate-fade-in"
+              style={{
+                animationDelay: `${index * 50}ms`
+              }}
+              onClick={() => playMedia(movie.id, movie.media_type || 'movie')}
+            >
+              <img
+                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                alt={movie.title || movie.name}
+                className="w-full rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
+                         transition-shadow duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                            opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm">
+                  {movie.title || movie.name}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
 
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 px-4 py-2 rounded-full
-                    text-white text-sm animate-pulse">
+                    text-white text-sm animate-fade-in">
         {viewerCount} people watching worldwide
       </div>
     </div>
