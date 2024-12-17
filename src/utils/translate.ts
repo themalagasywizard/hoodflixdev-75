@@ -14,10 +14,6 @@ export const translateText = async (text: string, from: string = 'auto', to: str
       }),
     });
     
-    if (!response.ok) {
-      throw new Error('Translation failed');
-    }
-    
     const data = await response.json();
     return data.translatedText;
   } catch (error) {

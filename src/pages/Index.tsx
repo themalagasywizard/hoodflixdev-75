@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Settings } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
-import Settings from '../components/Settings';
-import { translateText } from '../utils/translate';
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import LanguageSelector from '../components/LanguageSelector';
+import { translateText, supportedLanguages } from '../utils/translate';
 
 interface Movie {
   id: string;
@@ -18,11 +16,13 @@ interface Movie {
 const Index = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isDyslexicFont, setIsDyslexicFont] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [movies, setMovies] = useState<Movie[]>([]);
+  const [viewerCount, setViewerCount] = useState(500);
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
@@ -49,13 +49,21 @@ const Index = () => {
   };
 
   useEffect(() => {
+    showAllCategories();
+    
     const storedDyslexicPref = localStorage.getItem('dyslexicFont') === 'true';
     setIsDyslexicFont(storedDyslexicPref);
     if (storedDyslexicPref) {
       document.body.classList.add('dyslexic');
     }
 
+    const interval = setInterval(() => {
+      setViewerCount(prev => prev + Math.floor(Math.random() * 3));
+    }, 5000);
+
     fetchMovies();
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMovies = async () => {
@@ -72,8 +80,12 @@ const Index = () => {
       setMovies(allMovies);
     } catch (error) {
       console.error('Error fetching movies:', error);
-      toast.error("Failed to fetch movies");
     }
+  };
+
+  const showAllCategories = () => {
+    setSelectedCategory('all');
+    fetchMovies();
   };
 
   const filterCategory = async (categoryId: string) => {
@@ -96,7 +108,6 @@ const Index = () => {
       setMovies([...allMovies, ...allTvShows]);
     } catch (error) {
       console.error('Error fetching category:', error);
-      toast.error("Failed to fetch category");
     }
   };
 
@@ -116,7 +127,6 @@ const Index = () => {
       ));
     } catch (error) {
       console.error('Error searching:', error);
-      toast.error("Search failed");
     }
   };
 
@@ -161,10 +171,8 @@ const Index = () => {
           element.textContent = translatedText;
         }
       }
-      toast.success(`Language changed to ${lang}`);
     } catch (error) {
       console.error('Translation error:', error);
-      toast.error("Failed to change language");
     }
   };
 
@@ -183,14 +191,8 @@ const Index = () => {
           <nav className="flex-1 mx-8 overflow-x-auto scrollbar-hide">
             <div className="flex space-x-6">
               <button
-                onClick={() => {
-                  setSelectedCategory('all');
-                  fetchMovies();
-                }}
-                className={`text-white hover:text-[#ea384c] transition-all duration-300
-                  ${selectedCategory === 'all' ? 'text-[#ea384c]' : ''}`}
-                data-translate="home"
-                data-original-text="Home"
+                onClick={showAllCategories}
+                className="text-white hover:text-[#ea384c] transition-all duration-300"
               >
                 Home
               </button>
@@ -198,10 +200,7 @@ const Index = () => {
                 <button
                   key={id}
                   onClick={() => filterCategory(id)}
-                  className={`text-white hover:text-[#ea384c] transition-all duration-300
-                    ${selectedCategory === id ? 'text-[#ea384c]' : ''}`}
-                  data-translate={name.toLowerCase()}
-                  data-original-text={name}
+                  className="text-white hover:text-[#ea384c] transition-all duration-300"
                 >
                   {name}
                 </button>
@@ -210,21 +209,42 @@ const Index = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="icon"
+            <button 
               onClick={() => setShowSearch(!showSearch)}
-              className="hover:bg-[rgba(234,56,76,0.1)]"
+              className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
             >
               <Search className="w-5 h-5" />
-            </Button>
+            </button>
             
-            <Settings
-              currentLanguage={currentLanguage}
-              onLanguageChange={changeLanguage}
-              isDyslexicFont={isDyslexicFont}
-              onToggleDyslexicFont={toggleDyslexicFont}
-            />
+            <div className="relative">
+              <button 
+                onClick={() => setShowSettings(!showSettings)}
+                className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
+              >
+                <Settings className="w-5 h-5" />
+              </button>
+              
+              {showSettings && (
+                <div className="absolute right-0 mt-2 w-48 bg-[#141414] rounded-md shadow-lg py-1 border border-[#2a2a2a]">
+                  <LanguageSelector 
+                    currentLanguage={currentLanguage} 
+                    onLanguageChange={(lang) => {
+                      changeLanguage(lang);
+                      setShowSettings(false);
+                    }} 
+                  />
+                  <button
+                    onClick={() => {
+                      toggleDyslexicFont();
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
+                  >
+                    {isDyslexicFont ? 'Disable' : 'Enable'} Dyslexic Font
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
