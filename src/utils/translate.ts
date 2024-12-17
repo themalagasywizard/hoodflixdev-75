@@ -1,4 +1,4 @@
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export const supportedLanguages = {
   en: 'English',
@@ -15,26 +15,31 @@ export const supportedLanguages = {
 
 export const translateText = async (text: string, from: string = 'auto', to: string = 'en') => {
   try {
-    // Using LibreTranslate API which is more reliable
-    const response = await fetch('https://libretranslate.de/translate', {
+    // Using Google Translate API through RapidAPI
+    const url = `https://google-translate1.p.rapidapi.com/language/translate/v2`;
+    const options = {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+        'Accept-Encoding': 'application/gzip',
+        'X-RapidAPI-Key': '2c03fb5b67msh9b7c47a1b0f6ccap1e5f0bjsn8b34eaa714b7',
+        'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
       },
-      body: JSON.stringify({
+      body: new URLSearchParams({
         q: text,
         source: from === 'auto' ? 'en' : from,
-        target: to,
-        format: 'text',
-      }),
-    });
+        target: to
+      })
+    };
+
+    const response = await fetch(url, options);
     
     if (!response.ok) {
       throw new Error('Translation failed');
     }
 
     const data = await response.json();
-    return data.translatedText;
+    return data.data.translations[0].translatedText;
   } catch (error) {
     console.error('Translation error:', error);
     toast({
