@@ -300,7 +300,7 @@ const Index = () => {
                 {searchResults.map((result) => (
                   <div 
                     key={result.id}
-                    className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
+                    className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in aspect-[2/3]"
                     onClick={() => {
                       playMedia(result.id, result.media_type || 'movie');
                       setShowSearch(false);
@@ -311,7 +311,8 @@ const Index = () => {
                     <img
                       src={`https://image.tmdb.org/t/p/w500${result.poster_path}`}
                       alt={result.title || result.name}
-                      className="w-full rounded-lg"
+                      className="w-full h-full object-cover rounded-lg"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
                                   opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -330,7 +331,7 @@ const Index = () => {
           {movies.map((movie, index) => (
             <div 
               key={`${movie.id}-${index}`}
-              className="relative group transition-all duration-300 hover:scale-110 animate-fade-in"
+              className="relative group transition-all duration-300 hover:scale-110 animate-fade-in aspect-[2/3]"
               style={{
                 animationDelay: `${index * 50}ms`
               }}
@@ -339,7 +340,7 @@ const Index = () => {
               <img
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title || movie.name}
-                className="w-full rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
+                className="w-full h-full object-cover rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
                          transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
                 loading="lazy"
               />
