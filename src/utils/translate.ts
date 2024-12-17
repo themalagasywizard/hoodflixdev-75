@@ -15,31 +15,22 @@ export const supportedLanguages = {
 
 export const translateText = async (text: string, from: string = 'auto', to: string = 'en') => {
   try {
-    // Using Google Translate API through RapidAPI
-    const url = `https://google-translate1.p.rapidapi.com/language/translate/v2`;
-    const options = {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'Accept-Encoding': 'application/gzip',
-        'X-RapidAPI-Key': '2c03fb5b67msh9b7c47a1b0f6ccap1e5f0bjsn8b34eaa714b7',
-        'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
-      },
-      body: new URLSearchParams({
-        q: text,
-        source: from === 'auto' ? 'en' : from,
-        target: to
-      })
-    };
-
-    const response = await fetch(url, options);
+    // Using MyMemory Translation API which is free and reliable
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${from}|${to}`;
+    
+    const response = await fetch(url);
     
     if (!response.ok) {
       throw new Error('Translation failed');
     }
 
     const data = await response.json();
-    return data.data.translations[0].translatedText;
+    
+    if (data.responseStatus === 200) {
+      return data.responseData.translatedText;
+    } else {
+      throw new Error(data.responseDetails || 'Translation failed');
+    }
   } catch (error) {
     console.error('Translation error:', error);
     toast({
