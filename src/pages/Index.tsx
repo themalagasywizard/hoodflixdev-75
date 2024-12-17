@@ -164,7 +164,7 @@ const Index = () => {
     <div className="min-h-screen bg-[#141414] text-white relative select-none">
       <StarryBackground />
       
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md shadow-lg">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
             src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
@@ -172,11 +172,11 @@ const Index = () => {
             className="h-8 md:h-10"
           />
           
-          <nav className="flex-1 mx-8 overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-6">
+          <nav className="flex-1 mx-8">
+            <div className="flex space-x-6 overflow-x-auto scrollbar-hide">
               <button
                 onClick={showAllCategories}
-                className="text-white hover:text-[#ea384c] transition-all duration-300"
+                className="text-white hover:text-[#ea384c] transition-all duration-300 whitespace-nowrap"
                 data-translate
                 data-original-text="Home"
               >
@@ -186,7 +186,7 @@ const Index = () => {
                 <button
                   key={id}
                   onClick={() => filterCategory(id)}
-                  className="text-white hover:text-[#ea384c] transition-all duration-300"
+                  className="text-white hover:text-[#ea384c] transition-all duration-300 whitespace-nowrap"
                   data-translate
                   data-original-text={name}
                 >
@@ -214,7 +214,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto pt-20 relative z-10">
+      <main className="container mx-auto pt-24 relative z-10">
         <div id="video-container" className="mb-8"></div>
         
         {showSearch && (
@@ -298,12 +298,9 @@ const Index = () => {
           ))}
         </div>
 
-        <footer className="mt-8 pb-12 text-center text-sm text-gray-500">
-          <p>
-            © 2024{' '}
-            <span className="hover:text-[#ea384c] transition-colors duration-300">
-              aidenwrld
-            </span>
+        <footer className="mt-8 pb-12 text-center text-sm text-gray-400">
+          <p className="font-medium">
+            © {new Date().getFullYear()} <span className="text-[#ea384c]">aidenwrld</span>. All rights reserved.
           </p>
         </footer>
       </main>
