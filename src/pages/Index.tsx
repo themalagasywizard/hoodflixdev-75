@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
-import { translateText } from '../utils/translate';
+import { translateText, translatePage } from '../utils/translate';
 
 interface Movie {
   id: string;
@@ -151,20 +151,13 @@ const Index = () => {
 
   const handleLanguageChange = async (lang: string) => {
     setCurrentLanguage(lang);
-    const elementsToTranslate = document.querySelectorAll('[data-translate]');
+    await translatePage(lang);
     
-    for (const element of elementsToTranslate) {
-      const originalText = element.getAttribute('data-original-text') || element.textContent;
-      if (originalText) {
-        if (!element.getAttribute('data-original-text')) {
-          element.setAttribute('data-original-text', originalText);
-        }
-        const translatedText = await translateText(originalText, 'en', lang);
-        if (translatedText) {
-          element.textContent = translatedText;
-        }
-      }
-    }
+    // Update document language
+    document.documentElement.lang = lang;
+    
+    // Save preference
+    localStorage.setItem('preferredLanguage', lang);
   };
 
   return (
