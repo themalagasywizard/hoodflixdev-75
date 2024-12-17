@@ -47,6 +47,111 @@
   body.dyslexic {
     font-family: 'OpenDyslexic', system-ui, -apple-system, sans-serif;
   }
+
+  /* Enhanced animations */
+  .result-item {
+    @apply transition-all duration-300 hover:scale-105;
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .result-item:hover img {
+    @apply shadow-[0_0_25px_rgba(234,56,76,0.5)];
+  }
+
+  .result-item img {
+    @apply shadow-[0_0_15px_rgba(234,56,76,0.3)] transition-all duration-300;
+  }
+
+  .nav-link {
+    @apply relative overflow-hidden transition-all duration-300 hover:text-[#ea384c];
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-[#ea384c] transform scale-x-0 transition-transform duration-300 origin-bottom-right;
+  }
+
+  .nav-link:hover::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+
+  .search-input {
+    @apply transition-all duration-300;
+    box-shadow: 0 0 20px rgba(234, 56, 76, 0.2);
+  }
+
+  .search-input:focus {
+    box-shadow: 0 0 30px rgba(234, 56, 76, 0.4);
+  }
+
+  .settings-dropdown {
+    @apply bg-black/90 backdrop-blur-md border border-[#ea384c]/20;
+    animation: fadeInDown 0.3s ease-out forwards;
+  }
+
+  .settings-option {
+    @apply transition-all duration-200 hover:bg-[#ea384c]/10;
+  }
+
+  /* Keyframe Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(234, 56, 76, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(234, 56, 76, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(234, 56, 76, 0);
+    }
+  }
+
+  /* Enhanced viewer count */
+  #visit-count {
+    @apply fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 px-4 py-2 rounded-full text-white text-sm;
+    animation: pulse 2s infinite;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(234, 56, 76, 0.3);
+  }
+
+  /* Search screen enhancements */
+  #search-screen {
+    @apply bg-gradient-to-b from-black/97 to-black/95 backdrop-blur-md;
+  }
+
+  /* Category headers */
+  .category-title {
+    @apply text-2xl font-bold mb-4 text-white relative;
+    text-shadow: 0 0 10px rgba(234, 56, 76, 0.5);
+  }
+
+  .category-title::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#ea384c]/50 to-transparent;
+  }
 }
 
 @layer utilities {
@@ -57,20 +162,5 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
   }
 }
