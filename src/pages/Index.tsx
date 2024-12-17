@@ -6,6 +6,12 @@ interface Category {
   [key: string]: string;
 }
 
+interface Movie {
+  id: string;
+  title: string;
+  poster_path: string;
+}
+
 const Index = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isDyslexicFont, setIsDyslexicFont] = useState(false);
@@ -15,6 +21,7 @@ const Index = () => {
   const [viewerCount, setViewerCount] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [movies, setMovies] = useState<Movie[]>([]);
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
@@ -107,6 +114,9 @@ const Index = () => {
       setViewerCount(prev => prev + Math.floor(Math.random() * 3));
     }, 5000);
 
+    // Fetch initial movies
+    fetchMovies();
+
     return () => clearInterval(interval);
   }, []);
 
@@ -115,9 +125,21 @@ const Index = () => {
     document.body.classList.toggle('dyslexic', isDyslexicFont);
   }, [isDyslexicFont]);
 
+  const fetchMovies = async () => {
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`
+      );
+      const data = await response.json();
+      setMovies(data.results);
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+    }
+  };
+
   const showAllCategories = () => {
     setSelectedCategory('all');
-    // Implementation for showing all categories
+    fetchMovies();
   };
 
   const filterCategory = (categoryId: string) => {
@@ -155,6 +177,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[#141414] text-white">
+      {/* Header section */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
@@ -226,7 +249,6 @@ const Index = () => {
       {/* Main content */}
       <main className="container mx-auto pt-20 px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {/* Movie grid with red glow effect */}
           {movies.map(movie => (
             <div 
               key={movie.id}
@@ -235,7 +257,7 @@ const Index = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <img
-                src={movie.poster}
+                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title}
                 className="w-full h-auto rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
                          transition-shadow duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
