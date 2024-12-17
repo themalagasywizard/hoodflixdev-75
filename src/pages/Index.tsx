@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Settings } from 'lucide-react';
+import StarryBackground from '../components/StarryBackground';
+import ViewerCount from '../components/ViewerCount';
 
 interface Movie {
   id: string;
@@ -45,15 +47,12 @@ const Index = () => {
   };
 
   useEffect(() => {
-    // Initialize to home tab
     showAllCategories();
     
-    // Simulate viewer count updates
     const interval = setInterval(() => {
       setViewerCount(prev => prev + Math.floor(Math.random() * 3));
     }, 5000);
 
-    // Fetch initial movies
     fetchMovies();
 
     return () => clearInterval(interval);
@@ -61,7 +60,6 @@ const Index = () => {
 
   const fetchMovies = async () => {
     try {
-      // Fetch 3 pages of movies for more content
       const responses = await Promise.all([
         fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`),
         fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=2`),
@@ -85,7 +83,6 @@ const Index = () => {
   const filterCategory = async (categoryId: string) => {
     setSelectedCategory(categoryId);
     try {
-      // Fetch multiple pages for both movies and TV shows
       const [moviesData, tvShowsData] = await Promise.all([
         Promise.all([1, 2, 3].map(page => 
           fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
@@ -130,7 +127,6 @@ const Index = () => {
       ? `https://vidsrc.me/embed/movie?tmdb=${id}` 
       : `https://vidsrc.me/embed/tv?tmdb=${id}`;
     
-    // Create iframe element
     const iframe = document.createElement('iframe');
     iframe.src = url;
     iframe.style.width = '100%';
@@ -138,7 +134,6 @@ const Index = () => {
     iframe.frameBorder = '0';
     iframe.allowFullscreen = true;
 
-    // Find or create video container
     const videoContainer = document.getElementById('video-container');
     if (videoContainer) {
       videoContainer.innerHTML = '';
@@ -148,7 +143,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#141414] text-white">
+    <div className="min-h-screen bg-[#141414] text-white relative">
+      <StarryBackground />
+      
       <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
@@ -256,7 +253,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto pt-20">
+      <main className="container mx-auto pt-20 relative z-10">
         <div id="video-container" className="mb-8"></div>
         
         {showSearch && (
@@ -310,11 +307,11 @@ const Index = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 animate-fade-in">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 animate-fade-in">
           {movies.map((movie, index) => (
             <div 
               key={`${movie.id}-${index}`}
-              className="relative group transition-transform duration-300 hover:scale-105 animate-fade-in"
+              className="relative group transition-all duration-300 hover:scale-110 animate-fade-in"
               style={{
                 animationDelay: `${index * 50}ms`
               }}
@@ -324,12 +321,14 @@ const Index = () => {
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                 alt={movie.title || movie.name}
                 className="w-full rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
-                         transition-shadow duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
+                         transition-all duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
-                            opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm">
+                            opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                            rounded-lg">
+                <p className="absolute bottom-2 left-2 right-2 text-center text-white text-sm
+                            font-medium">
                   {movie.title || movie.name}
                 </p>
               </div>
@@ -338,10 +337,7 @@ const Index = () => {
         </div>
       </main>
 
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/80 px-4 py-2 rounded-full
-                    text-white text-sm animate-fade-in">
-        {viewerCount} people watching worldwide
-      </div>
+      <ViewerCount />
     </div>
   );
 };
