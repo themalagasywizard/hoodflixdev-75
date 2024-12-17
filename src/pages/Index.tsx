@@ -61,11 +61,17 @@ const Index = () => {
 
   const fetchMovies = async () => {
     try {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`
-      );
-      const data = await response.json();
-      setMovies(data.results);
+      // Fetch 3 pages of movies for more content
+      const responses = await Promise.all([
+        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`),
+        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=2`),
+        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=3`)
+      ]);
+      
+      const data = await Promise.all(responses.map(r => r.json()));
+      const allMovies = data.flatMap(d => d.results);
+      
+      setMovies(allMovies);
     } catch (error) {
       console.error('Error fetching movies:', error);
     }
@@ -79,15 +85,22 @@ const Index = () => {
   const filterCategory = async (categoryId: string) => {
     setSelectedCategory(categoryId);
     try {
-      const [moviesResponse, tvShowsResponse] = await Promise.all([
-        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=1`),
-        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&page=1`)
+      // Fetch multiple pages for both movies and TV shows
+      const [moviesData, tvShowsData] = await Promise.all([
+        Promise.all([1, 2, 3].map(page => 
+          fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
+            .then(res => res.json())
+        )),
+        Promise.all([1, 2, 3].map(page => 
+          fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
+            .then(res => res.json())
+        ))
       ]);
       
-      const moviesData = await moviesResponse.json();
-      const tvShowsData = await tvShowsResponse.json();
+      const allMovies = moviesData.flatMap(data => data.results);
+      const allTvShows = tvShowsData.flatMap(data => data.results);
       
-      setMovies([...moviesData.results, ...tvShowsData.results]);
+      setMovies([...allMovies, ...allTvShows]);
     } catch (error) {
       console.error('Error fetching category:', error);
     }
@@ -243,12 +256,12 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto pt-20 px-4">
+      <main className="container mx-auto pt-20">
         <div id="video-container" className="mb-8"></div>
         
         {showSearch && (
           <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4">
-            <div className="max-w-3xl mx-auto pt-20">
+            <div className="max-w-5xl mx-auto pt-20">
               <input
                 type="text"
                 value={searchQuery}
@@ -267,11 +280,11 @@ const Index = () => {
                 className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none"
               />
               
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 animate-fade-in">
                 {searchResults.map((result) => (
                   <div 
                     key={result.id}
-                    className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer"
+                    className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in"
                     onClick={() => {
                       playMedia(result.id, result.media_type || 'movie');
                       setShowSearch(false);
@@ -297,11 +310,14 @@ const Index = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {movies.map(movie => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 animate-fade-in">
+          {movies.map((movie, index) => (
             <div 
-              key={movie.id}
-              className="relative group transition-transform duration-300 hover:scale-105"
+              key={`${movie.id}-${index}`}
+              className="relative group transition-transform duration-300 hover:scale-105 animate-fade-in"
+              style={{
+                animationDelay: `${index * 50}ms`
+              }}
               onClick={() => playMedia(movie.id, movie.media_type || 'movie')}
             >
               <img
@@ -309,6 +325,7 @@ const Index = () => {
                 alt={movie.title || movie.name}
                 className="w-full rounded-lg shadow-[0_0_15px_rgba(234,56,76,0.3)] 
                          transition-shadow duration-300 group-hover:shadow-[0_0_25px_rgba(234,56,76,0.5)]"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300">
