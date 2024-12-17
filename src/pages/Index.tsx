@@ -154,22 +154,25 @@ const Index = () => {
     const newValue = !isDyslexicFont;
     setIsDyslexicFont(newValue);
     localStorage.setItem('dyslexicFont', String(newValue));
-    if (newValue) {
-      document.body.classList.add('dyslexic');
-    } else {
-      document.body.classList.remove('dyslexic');
-    }
+    document.body.classList.toggle('dyslexic', newValue);
   };
 
   const changeLanguage = async (lang: string) => {
     setCurrentLanguage(lang);
-    const elementsToTranslate = document.querySelectorAll('[data-translate]');
-    for (const element of elementsToTranslate) {
-      const key = element.getAttribute('data-translate');
-      if (key) {
-        const translatedText = await translateText(key, 'auto', lang);
-        element.textContent = translatedText;
+    try {
+      const elementsToTranslate = document.querySelectorAll('[data-translate]');
+      for (const element of elementsToTranslate) {
+        const originalText = element.getAttribute('data-original-text') || element.textContent;
+        if (originalText) {
+          if (!element.getAttribute('data-original-text')) {
+            element.setAttribute('data-original-text', originalText);
+          }
+          const translatedText = await translateText(originalText, 'en', lang);
+          element.textContent = translatedText;
+        }
       }
+    } catch (error) {
+      console.error('Translation error:', error);
     }
   };
 
