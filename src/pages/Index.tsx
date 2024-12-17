@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Settings } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
+import LanguageSelector from '../components/LanguageSelector';
 import { translateText, supportedLanguages } from '../utils/translate';
 
 interface Movie {
@@ -50,7 +51,6 @@ const Index = () => {
   useEffect(() => {
     showAllCategories();
     
-    // Initialize dyslexic font preference
     const storedDyslexicPref = localStorage.getItem('dyslexicFont') === 'true';
     setIsDyslexicFont(storedDyslexicPref);
     if (storedDyslexicPref) {
@@ -154,7 +154,11 @@ const Index = () => {
     const newValue = !isDyslexicFont;
     setIsDyslexicFont(newValue);
     localStorage.setItem('dyslexicFont', String(newValue));
-    document.body.classList.toggle('dyslexic');
+    if (newValue) {
+      document.body.classList.add('dyslexic');
+    } else {
+      document.body.classList.remove('dyslexic');
+    }
   };
 
   const changeLanguage = async (lang: string) => {
@@ -262,7 +266,7 @@ const Index = () => {
                     setSearchResults([]);
                   }
                 }}
-                placeholder={translations[currentLanguage]?.search || "Search movies and TV shows..."}
+                placeholder="Search movies and TV shows..."
                 className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none select-text"
               />
               
