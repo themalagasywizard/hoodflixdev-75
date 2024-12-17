@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search, Settings } from 'lucide-react';
+import { Search } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
-import LanguageSelector from '../components/LanguageSelector';
-import { translateText, supportedLanguages } from '../utils/translate';
+import Settings from '../components/Settings';
+import { translateText } from '../utils/translate';
 
 interface Movie {
   id: string;
@@ -168,7 +168,9 @@ const Index = () => {
             element.setAttribute('data-original-text', originalText);
           }
           const translatedText = await translateText(originalText, 'en', lang);
-          element.textContent = translatedText;
+          if (translatedText) {
+            element.textContent = translatedText;
+          }
         }
       }
     } catch (error) {
@@ -216,35 +218,12 @@ const Index = () => {
               <Search className="w-5 h-5" />
             </button>
             
-            <div className="relative">
-              <button 
-                onClick={() => setShowSettings(!showSettings)}
-                className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-              
-              {showSettings && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#141414] rounded-md shadow-lg py-1 border border-[#2a2a2a]">
-                  <LanguageSelector 
-                    currentLanguage={currentLanguage} 
-                    onLanguageChange={(lang) => {
-                      changeLanguage(lang);
-                      setShowSettings(false);
-                    }} 
-                  />
-                  <button
-                    onClick={() => {
-                      toggleDyslexicFont();
-                      setShowSettings(false);
-                    }}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
-                  >
-                    {isDyslexicFont ? 'Disable' : 'Enable'} Dyslexic Font
-                  </button>
-                </div>
-              )}
-            </div>
+            <Settings
+              currentLanguage={currentLanguage}
+              isDyslexicFont={isDyslexicFont}
+              onLanguageChange={changeLanguage}
+              onToggleDyslexicFont={toggleDyslexicFont}
+            />
           </div>
         </div>
       </header>

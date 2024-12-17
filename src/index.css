@@ -50,7 +50,7 @@
     overflow-x: hidden;
   }
 
-  .dyslexic {
+  .dyslexic * {
     font-family: 'OpenDyslexic', system-ui, -apple-system, sans-serif !important;
   }
 }
