@@ -1,10 +1,21 @@
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
-const LINGVA_API_BASE = 'https://translate.argosopentech.com/translate';
+export const supportedLanguages = {
+  en: 'English',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+  it: 'Italian',
+  pt: 'Portuguese',
+  ru: 'Russian',
+  zh: 'Chinese',
+  ja: 'Japanese',
+  ko: 'Korean'
+};
 
 export const translateText = async (text: string, from: string = 'auto', to: string = 'en') => {
   try {
-    const response = await fetch(LINGVA_API_BASE, {
+    const response = await fetch('https://translate.argosopentech.com/translate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,17 +42,4 @@ export const translateText = async (text: string, from: string = 'auto', to: str
     });
     return text;
   }
-};
-
-export const supportedLanguages = {
-  en: 'English',
-  es: 'Spanish',
-  fr: 'French',
-  de: 'German',
-  it: 'Italian',
-  pt: 'Portuguese',
-  ru: 'Russian',
-  zh: 'Chinese',
-  ja: 'Japanese',
-  ko: 'Korean'
 };

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Settings as SettingsIcon } from 'lucide-react';
 import { supportedLanguages } from '../utils/translate';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SettingsProps {
   currentLanguage: string;

@@ -49,21 +49,13 @@ const Index = () => {
   };
 
   useEffect(() => {
-    showAllCategories();
-    
     const storedDyslexicPref = localStorage.getItem('dyslexicFont') === 'true';
     setIsDyslexicFont(storedDyslexicPref);
     if (storedDyslexicPref) {
       document.body.classList.add('dyslexic');
     }
 
-    const interval = setInterval(() => {
-      setViewerCount(prev => prev + Math.floor(Math.random() * 3));
-    }, 5000);
-
     fetchMovies();
-
-    return () => clearInterval(interval);
   }, []);
 
   const fetchMovies = async () => {
@@ -157,24 +149,21 @@ const Index = () => {
     document.body.classList.toggle('dyslexic', newValue);
   };
 
-  const changeLanguage = async (lang: string) => {
+  const handleLanguageChange = async (lang: string) => {
     setCurrentLanguage(lang);
-    try {
-      const elementsToTranslate = document.querySelectorAll('[data-translate]');
-      for (const element of elementsToTranslate) {
-        const originalText = element.getAttribute('data-original-text') || element.textContent;
-        if (originalText) {
-          if (!element.getAttribute('data-original-text')) {
-            element.setAttribute('data-original-text', originalText);
-          }
-          const translatedText = await translateText(originalText, 'en', lang);
-          if (translatedText) {
-            element.textContent = translatedText;
-          }
+    const elementsToTranslate = document.querySelectorAll('[data-translate]');
+    
+    for (const element of elementsToTranslate) {
+      const originalText = element.getAttribute('data-original-text') || element.textContent;
+      if (originalText) {
+        if (!element.getAttribute('data-original-text')) {
+          element.setAttribute('data-original-text', originalText);
+        }
+        const translatedText = await translateText(originalText, 'en', lang);
+        if (translatedText) {
+          element.textContent = translatedText;
         }
       }
-    } catch (error) {
-      console.error('Translation error:', error);
     }
   };
 
@@ -195,6 +184,8 @@ const Index = () => {
               <button
                 onClick={showAllCategories}
                 className="text-white hover:text-[#ea384c] transition-all duration-300"
+                data-translate
+                data-original-text="Home"
               >
                 Home
               </button>
@@ -203,6 +194,8 @@ const Index = () => {
                   key={id}
                   onClick={() => filterCategory(id)}
                   className="text-white hover:text-[#ea384c] transition-all duration-300"
+                  data-translate
+                  data-original-text={name}
                 >
                   {name}
                 </button>
@@ -221,7 +214,7 @@ const Index = () => {
             <Settings
               currentLanguage={currentLanguage}
               isDyslexicFont={isDyslexicFont}
-              onLanguageChange={changeLanguage}
+              onLanguageChange={handleLanguageChange}
               onToggleDyslexicFont={toggleDyslexicFont}
             />
           </div>

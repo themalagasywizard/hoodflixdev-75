@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'OpenDyslexic';
-  src: url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/open-dyslexic-regular.woff') format('woff');
+  src: url('https://dl.dropboxusercontent.com/s/qfpakpjedhsrdb9/OpenDyslexicAlta-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -50,7 +50,7 @@
     overflow-x: hidden;
   }
 
-  .dyslexic * {
+  body.dyslexic * {
     font-family: 'OpenDyslexic', system-ui, -apple-system, sans-serif !important;
   }
 }
