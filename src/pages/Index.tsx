@@ -181,19 +181,58 @@ const Index = () => {
               </button>
               
               {showSettings && (
-                <div className="absolute right-0 mt-2 w-48 bg-black/90 rounded-md shadow-lg py-1">
-                  {['en', 'es', 'ru', 'sl', 'tr'].map(lang => (
-                    <button
-                      key={lang}
-                      onClick={() => setCurrentLanguage(lang)}
-                      className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)]"
-                    >
-                      {lang.toUpperCase()}
-                    </button>
-                  ))}
+                <div className="absolute right-0 mt-2 w-48 bg-[#141414] rounded-md shadow-lg py-1 border border-[#2a2a2a]">
                   <button
-                    onClick={() => setIsDyslexicFont(!isDyslexicFont)}
-                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)]"
+                    onClick={() => {
+                      setCurrentLanguage('en');
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
+                  >
+                    English (United States)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentLanguage('es');
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
+                  >
+                    Español (Spanish)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentLanguage('ru');
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
+                  >
+                    Русский (Russian)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentLanguage('sl');
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
+                  >
+                    Slovenščina (Slovenian)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentLanguage('tr');
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
+                  >
+                    Türkçe (Turkish)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsDyslexicFont(!isDyslexicFont);
+                      setShowSettings(false);
+                    }}
+                    className="block w-full px-4 py-2 text-sm text-white hover:bg-[rgba(234,56,76,0.1)] text-left"
                   >
                     Dyslexic Font
                   </button>
@@ -208,7 +247,7 @@ const Index = () => {
         <div id="video-container" className="mb-8"></div>
         
         {showSearch && (
-          <div className="fixed inset-0 bg-black/95 z-50 p-4">
+          <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4">
             <div className="max-w-3xl mx-auto pt-20">
               <input
                 type="text"
@@ -217,16 +256,28 @@ const Index = () => {
                   setSearchQuery(e.target.value);
                   handleSearch(e.target.value);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setShowSearch(false);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }
+                }}
                 placeholder="Search movies and TV shows..."
-                className="w-full p-4 bg-white/10 rounded-lg text-white placeholder:text-white/50"
+                className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none"
               />
               
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8">
                 {searchResults.map((result) => (
                   <div 
                     key={result.id}
-                    className="relative group transition-transform duration-300 hover:scale-105"
-                    onClick={() => playMedia(result.id, result.media_type || 'movie')}
+                    className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer"
+                    onClick={() => {
+                      playMedia(result.id, result.media_type || 'movie');
+                      setShowSearch(false);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
                   >
                     <img
                       src={`https://image.tmdb.org/t/p/w500${result.poster_path}`}
