@@ -4,6 +4,7 @@ import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
 import { translateText, translatePage } from '../utils/translate';
+import { useToast } from "@/components/ui/use-toast";
 
 interface Movie {
   id: string;
@@ -23,8 +24,34 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [movies, setMovies] = useState<Movie[]>([]);
   const [viewerCount, setViewerCount] = useState(500);
+  const [showRainbowSecret, setShowRainbowSecret] = useState(false);
+  const [rainbowMode, setRainbowMode] = useState(false);
+  const { toast } = useToast();
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
+
+  // Konami code sequence
+  const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+  const [konamiSequence, setKonamiSequence] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const newSequence = [...konamiSequence, e.key];
+      if (newSequence.length > konamiCode.length) {
+        newSequence.shift();
+      }
+      setKonamiSequence(newSequence);
+
+      if (newSequence.join('') === konamiCode.join('')) {
+        setRainbowMode(true);
+        setShowRainbowSecret(true);
+        setTimeout(() => setShowRainbowSecret(false), 3000);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [konamiSequence]);
 
   const categories = {
     '28': 'Action',
@@ -165,56 +192,68 @@ const Index = () => {
       <StarryBackground />
       
       <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md shadow-lg shadow-black/50 border-b border-[#2a2a2a]">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <img 
-            src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
-            alt="Hoodflix" 
-            className="h-8 md:h-10"
-          />
-          
-          <nav className="flex-1 mx-8 overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-6">
-              <button
-                onClick={showAllCategories}
-                className="text-white hover:text-[#ea384c] transition-all duration-300"
-                data-translate
-                data-original-text="Home"
-              >
-                Home
-              </button>
-              {Object.entries(categories).map(([id, name]) => (
+        <div className="container mx-auto px-4 py-3">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex items-center space-x-6 whitespace-nowrap">
+              <img 
+                src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
+                alt="Hoodflix" 
+                className="h-8 md:h-10 flex-shrink-0"
+              />
+              
+              <nav className="flex space-x-6">
                 <button
-                  key={id}
-                  onClick={() => filterCategory(id)}
+                  onClick={showAllCategories}
                   className="text-white hover:text-[#ea384c] transition-all duration-300"
                   data-translate
-                  data-original-text={name}
+                  data-original-text="Home"
                 >
-                  {name}
+                  Home
                 </button>
-              ))}
-            </div>
-          </nav>
+                {Object.entries(categories).map(([id, name]) => (
+                  <button
+                    key={id}
+                    onClick={() => filterCategory(id)}
+                    className="text-white hover:text-[#ea384c] transition-all duration-300"
+                    data-translate
+                    data-original-text={name}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </nav>
 
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => setShowSearch(!showSearch)}
-              className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-            
-            <Settings
-              currentLanguage={currentLanguage}
-              isDyslexicFont={isDyslexicFont}
-              onLanguageChange={handleLanguageChange}
-              onToggleDyslexicFont={toggleDyslexicFont}
-            />
+              <div className="flex items-center space-x-4 flex-shrink-0">
+                <button 
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors"
+                >
+                  <Search className="w-5 h-5" />
+                </button>
+                
+                <Settings
+                  currentLanguage={currentLanguage}
+                  isDyslexicFont={isDyslexicFont}
+                  onLanguageChange={handleLanguageChange}
+                  onToggleDyslexicFont={toggleDyslexicFont}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto pt-20 relative z-10">
+      {showRainbowSecret && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
+                      bg-black/80 backdrop-blur-md p-8 rounded-lg z-[60]
+                      animate-scale-in">
+          <p className="text-2xl font-bold animate-fade-in">
+            Trinity's Rainbow Secret
+          </p>
+        </div>
+      )}
+
+      <main className={`container mx-auto pt-20 relative z-10 ${rainbowMode ? 'animate-rainbow' : ''}`}>
         <div id="video-container" className="mb-8"></div>
         
         {showSearch && (
@@ -310,6 +349,29 @@ const Index = () => {
       </footer>
 
       <ViewerCount />
+
+      <style jsx global>{`
+        @keyframes rainbow {
+          0% { color: #8B5CF6; }
+          25% { color: #D946EF; }
+          50% { color: #F97316; }
+          75% { color: #0EA5E9; }
+          100% { color: #8B5CF6; }
+        }
+        
+        .animate-rainbow {
+          animation: rainbow 5s linear infinite;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
