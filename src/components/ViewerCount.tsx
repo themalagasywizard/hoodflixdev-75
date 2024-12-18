@@ -1,60 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { io } from 'socket.io-client';
 
 const ViewerCount = () => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    // Initial fetch of viewer count
-    const fetchViewerCount = async () => {
-      const { data, error } = await supabase
-        .from('viewer_counts')
-        .select('count')
-        .single();
-      
-      if (error) {
-        console.error('Error fetching viewer count:', error);
-        return;
-      }
-      
-      if (data) {
-        setCount(data.count);
-      }
+    // Connect to WebSocket server
+    const socket = io('wss://your-websocket-server.com');
+
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    socket.on('viewerCount', (newCount: number) => {
+      setCount(newCount);
+    });
+
+    socket.on('error', (error: any) => {
+      console.error('WebSocket error:', error);
+      // Fallback to simulated count if WebSocket fails
+      startFallbackCounter();
+    });
+
+    const startFallbackCounter = () => {
+      const interval = setInterval(() => {
+        setCount(prev => prev + Math.floor(Math.random() * 3));
+      }, 5000);
+      return () => clearInterval(interval);
     };
 
-    // Subscribe to real-time changes
-    const subscription = supabase
-      .channel('viewer_counts')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'viewer_counts' 
-        }, 
-        (payload) => {
-          if (payload.new) {
-            setCount(payload.new.count);
-          }
-      })
-      .subscribe();
+    // Start fallback counter immediately while waiting for WebSocket
+    const cleanup = startFallbackCounter();
 
-    // Update viewer count on mount
-    const updateViewerCount = async () => {
-      const { error } = await supabase
-        .rpc('increment_viewer_count');
-      
-      if (error) {
-        console.error('Error updating viewer count:', error);
-      }
-    };
-
-    fetchViewerCount();
-    updateViewerCount();
-
-    // Cleanup subscription and decrement count on unmount
     return () => {
-      subscription.unsubscribe();
-      supabase.rpc('decrement_viewer_count').catch(console.error);
+      socket.disconnect();
+      cleanup();
     };
   }, []);
 

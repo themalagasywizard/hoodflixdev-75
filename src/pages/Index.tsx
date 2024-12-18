@@ -164,7 +164,7 @@ const Index = () => {
     <div className="min-h-screen bg-[#141414] text-white relative select-none">
       <StarryBackground />
       
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md shadow-lg shadow-black/50 border-b border-[#2a2a2a]">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
             src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
@@ -298,15 +298,16 @@ const Index = () => {
           ))}
         </div>
 
-        <footer className="mt-8 pb-12 text-center text-sm text-gray-500">
-          <p>
-            © 2024{' '}
-            <span className="hover:text-[#ea384c] transition-colors duration-300">
-              aidenwrld
-            </span>
-          </p>
-        </footer>
       </main>
+
+      <footer className="mt-8 pb-12 text-center text-sm text-gray-400">
+        <p className="font-medium">
+          © Copyright {new Date().getFullYear()} by{' '}
+          <span className="text-[#ea384c] hover:text-[#ff4d63] transition-colors duration-300">
+            aidenwrld
+          </span>
+        </p>
+      </footer>
 
       <ViewerCount />
     </div>
