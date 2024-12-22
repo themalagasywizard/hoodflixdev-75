@@ -12,6 +12,10 @@ const blockAds = () => {
     'ins.adsbygoogle',
     '[class*="sponsored"]',
     '[id*="sponsored"]',
+    'iframe[src*="nexusbloom.xyz"]',
+    'a[href*="nexusbloom.xyz"]',
+    'iframe[src*="clickid"]',
+    'a[href*="clickid"]',
   ];
 
   const removeAds = () => {
@@ -28,10 +32,12 @@ const blockAds = () => {
   observer.observe(document.body, { childList: true, subtree: true });
 };
 
-// Block unwanted redirects
+// Enhanced redirect blocking
 const blockRedirects = () => {
   const originalPushState = history.pushState;
   const originalReplaceState = history.replaceState;
+  const originalAssign = window.location.assign;
+  const originalReplace = window.location.replace;
 
   // Override pushState
   history.pushState = function(...args) {
@@ -48,11 +54,34 @@ const blockRedirects = () => {
       originalReplaceState.apply(this, args);
     }
   };
+
+  // Override location.assign
+  window.location.assign = function(url: string) {
+    if (isValidRedirect(url)) {
+      originalAssign.call(window.location, url);
+    }
+  };
+
+  // Override location.replace
+  window.location.replace = function(url: string) {
+    if (isValidRedirect(url)) {
+      originalReplace.call(window.location, url);
+    }
+  };
+
+  // Block href clicks
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+    const link = target.closest('a');
+    if (link && !isValidRedirect(link.href)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, true);
 };
 
-// Block pop-ups
+// Enhanced popup blocking
 const blockPopups = () => {
-  // Override window.open
   const originalOpen = window.open;
   window.open = function(...args) {
     const url = args[0]?.toString();
@@ -62,31 +91,53 @@ const blockPopups = () => {
     return null;
   };
 
-  // Block common pop-up events
   window.addEventListener('beforeunload', (event) => {
     event.preventDefault();
     return;
   });
+
+  // Block window.open calls
+  Object.defineProperty(window, 'open', {
+    value: function() {
+      return null;
+    }
+  });
 };
 
-// Helper function to check if redirect is valid
+// Enhanced redirect validation
 const isValidRedirect = (url: string): boolean => {
   try {
     const urlObj = new URL(url, window.location.origin);
-    // Allow only same-origin redirects or specific trusted domains
-    return urlObj.origin === window.location.origin || 
-           /^https:\/\/(api\.themoviedb\.org|vidsrc\.me)/.test(urlObj.origin);
+    const trustedDomains = [
+      window.location.origin,
+      'api.themoviedb.org',
+      'vidsrc.me',
+      'image.tmdb.org',
+      'i.ibb.co'
+    ];
+    
+    return trustedDomains.some(domain => 
+      urlObj.origin === window.location.origin || 
+      urlObj.hostname.includes(domain)
+    );
   } catch {
     return false;
   }
 };
 
-// Helper function to check if popup is valid
+// Enhanced popup validation
 const isValidPopup = (url: string): boolean => {
   try {
     const urlObj = new URL(url, window.location.origin);
-    // Allow only specific trusted domains for popups
-    return /^https:\/\/(api\.themoviedb\.org|vidsrc\.me)/.test(urlObj.origin);
+    const trustedDomains = [
+      'api.themoviedb.org',
+      'vidsrc.me',
+      'image.tmdb.org'
+    ];
+    
+    return trustedDomains.some(domain => 
+      urlObj.hostname.includes(domain)
+    );
   } catch {
     return false;
   }
@@ -97,5 +148,5 @@ export const initializeBlockers = () => {
   blockAds();
   blockRedirects();
   blockPopups();
-  console.log('Content blockers initialized');
+  console.log('Enhanced content blockers initialized');
 };
