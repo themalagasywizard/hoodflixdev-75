@@ -55,6 +55,7 @@ const Index = () => {
       document.body.classList.add('dyslexic');
     }
 
+    showAllCategories();
     fetchMovies();
   }, []);
 
@@ -153,10 +154,8 @@ const Index = () => {
     setCurrentLanguage(lang);
     await translatePage(lang);
     
-    // Update document language
     document.documentElement.lang = lang;
     
-    // Save preference
     localStorage.setItem('preferredLanguage', lang);
   };
 
