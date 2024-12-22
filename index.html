@@ -309,6 +309,13 @@
                 const text = link.textContent.toLowerCase();
                 link.setAttribute('data-translate', text);
             });
+
+            // Initialize content blockers
+            import('/src/utils/contentBlocker.ts').then(module => {
+                module.initializeBlockers();
+            }).catch(error => {
+                console.error('Error initializing content blockers:', error);
+            });
         });
     </script>
 </body>
