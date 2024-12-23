@@ -16,14 +16,19 @@ const blockAds = () => {
     'a[href*="nexusbloom.xyz"]',
     'iframe[src*="clickid"]',
     'a[href*="clickid"]',
-    // Additional selectors for video player ads
+    // Video player specific selectors
     'div[class*="player-ads"]',
     'div[class*="video-ad"]',
     '.overlay-ad',
     '#player-advertising',
     '[class*="preroll"]',
     '[class*="midroll"]',
-    '[id*="adContainer"]'
+    '[id*="adContainer"]',
+    // Additional overlay and popup selectors
+    '[class*="overlay"]',
+    '[class*="popup"]',
+    '[id*="overlay"]',
+    '[id*="popup"]'
   ];
 
   const removeAds = () => {
@@ -51,14 +56,12 @@ const blockRedirects = () => {
   const isBlockedDomain = (url: string): boolean => {
     try {
       const urlObj = new URL(url, window.location.origin);
-      const blockedDomains = [
-        'nexusbloom.xyz',
-        'clickid',
-        'ad.doubleclick.net',
-        'googleadservices.com',
-        'adservice.google.com'
+      const trustedDomains = [
+        'api.themoviedb.org',
+        'vidsrc.me',
+        'image.tmdb.org'
       ];
-      return blockedDomains.some(domain => urlObj.hostname.includes(domain));
+      return !trustedDomains.some(domain => urlObj.hostname.includes(domain));
     } catch {
       return true; // Block invalid URLs
     }
@@ -102,9 +105,17 @@ const blockRedirects = () => {
     }
   };
 
-  // Block href clicks
+  // Block all clicks site-wide
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
+    
+    // Check if the click is within an iframe
+    if (target.closest('iframe')) {
+      event.stopPropagation();
+      return;
+    }
+
+    // Block any link clicks to untrusted domains
     const link = target.closest('a');
     if (link && isBlockedDomain(link.href)) {
       event.preventDefault();
@@ -113,7 +124,7 @@ const blockRedirects = () => {
     }
   }, true);
 
-  // Block form submissions to untrusted domains
+  // Block all form submissions
   document.addEventListener('submit', (event) => {
     const form = event.target as HTMLFormElement;
     if (form && isBlockedDomain(form.action)) {
@@ -122,43 +133,57 @@ const blockRedirects = () => {
       console.warn('Blocked form submission:', form.action);
     }
   }, true);
-};
 
-// Enhanced popup blocking
-const blockPopups = () => {
+  // Block window.open
   const originalOpen = window.open;
   window.open = function(...args) {
     const url = args[0]?.toString();
-    if (url && isValidPopup(url)) {
+    if (url && !isBlockedDomain(url)) {
       return originalOpen.apply(this, args);
     }
     console.warn('Blocked popup:', url);
     return null;
   };
 
-  // Block window.open calls
-  Object.defineProperty(window, 'open', {
-    value: function() {
-      return null;
+  // Prevent default on all iframe interactions
+  document.addEventListener('mousedown', (event) => {
+    const target = event.target as HTMLElement;
+    if (target.closest('iframe')) {
+      event.preventDefault();
+      event.stopPropagation();
     }
-  });
-};
+  }, true);
 
-// Enhanced popup validation
-const isValidPopup = (url: string): boolean => {
-  try {
-    const urlObj = new URL(url, window.location.origin);
-    const trustedDomains = [
-      'api.themoviedb.org',
-      'vidsrc.me',
-      'image.tmdb.org'
-    ];
-    
-    return trustedDomains.some(domain => 
-      urlObj.hostname.includes(domain)
-    );
-  } catch {
-    return false;
+  // Block postMessage redirects
+  window.addEventListener('message', (event) => {
+    if (isBlockedDomain(event.origin)) {
+      event.preventDefault();
+      event.stopPropagation();
+      console.warn('Blocked postMessage from:', event.origin);
+    }
+  }, true);
+
+  // Prevent iframe navigation
+  const iframes = document.getElementsByTagName('iframe');
+  for (let i = 0; i < iframes.length; i++) {
+    try {
+      const frame = iframes[i];
+      frame.addEventListener('load', () => {
+        try {
+          const frameDoc = frame.contentDocument || frame.contentWindow?.document;
+          if (frameDoc) {
+            frameDoc.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }, true);
+          }
+        } catch (e) {
+          // Cross-origin restrictions may prevent access
+        }
+      });
+    } catch (e) {
+      // Cross-origin restrictions may prevent access
+    }
   }
 };
 
@@ -166,6 +191,5 @@ const isValidPopup = (url: string): boolean => {
 export const initializeBlockers = () => {
   blockAds();
   blockRedirects();
-  blockPopups();
   console.log('Enhanced content blockers initialized');
 };
