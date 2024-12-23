@@ -16,6 +16,14 @@ const blockAds = () => {
     'a[href*="nexusbloom.xyz"]',
     'iframe[src*="clickid"]',
     'a[href*="clickid"]',
+    // Additional selectors for video player ads
+    'div[class*="player-ads"]',
+    'div[class*="video-ad"]',
+    '.overlay-ad',
+    '#player-advertising',
+    '[class*="preroll"]',
+    '[class*="midroll"]',
+    '[id*="adContainer"]'
   ];
 
   const removeAds = () => {
@@ -39,33 +47,58 @@ const blockRedirects = () => {
   const originalAssign = window.location.assign;
   const originalReplace = window.location.replace;
 
+  // Block all redirects except for trusted domains
+  const isBlockedDomain = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url, window.location.origin);
+      const blockedDomains = [
+        'nexusbloom.xyz',
+        'clickid',
+        'ad.doubleclick.net',
+        'googleadservices.com',
+        'adservice.google.com'
+      ];
+      return blockedDomains.some(domain => urlObj.hostname.includes(domain));
+    } catch {
+      return true; // Block invalid URLs
+    }
+  };
+
   // Override pushState
   history.pushState = function(...args) {
     const newUrl = args[2]?.toString();
-    if (newUrl && isValidRedirect(newUrl)) {
+    if (newUrl && !isBlockedDomain(newUrl)) {
       originalPushState.apply(this, args);
+    } else {
+      console.warn('Blocked redirect attempt:', newUrl);
     }
   };
 
   // Override replaceState
   history.replaceState = function(...args) {
     const newUrl = args[2]?.toString();
-    if (newUrl && isValidRedirect(newUrl)) {
+    if (newUrl && !isBlockedDomain(newUrl)) {
       originalReplaceState.apply(this, args);
+    } else {
+      console.warn('Blocked replace attempt:', newUrl);
     }
   };
 
   // Override location.assign
   window.location.assign = function(url: string) {
-    if (isValidRedirect(url)) {
+    if (!isBlockedDomain(url)) {
       originalAssign.call(window.location, url);
+    } else {
+      console.warn('Blocked assign attempt:', url);
     }
   };
 
   // Override location.replace
   window.location.replace = function(url: string) {
-    if (isValidRedirect(url)) {
+    if (!isBlockedDomain(url)) {
       originalReplace.call(window.location, url);
+    } else {
+      console.warn('Blocked replace attempt:', url);
     }
   };
 
@@ -73,9 +106,20 @@ const blockRedirects = () => {
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
     const link = target.closest('a');
-    if (link && !isValidRedirect(link.href)) {
+    if (link && isBlockedDomain(link.href)) {
       event.preventDefault();
       event.stopPropagation();
+      console.warn('Blocked link click:', link.href);
+    }
+  }, true);
+
+  // Block form submissions to untrusted domains
+  document.addEventListener('submit', (event) => {
+    const form = event.target as HTMLFormElement;
+    if (form && isBlockedDomain(form.action)) {
+      event.preventDefault();
+      event.stopPropagation();
+      console.warn('Blocked form submission:', form.action);
     }
   }, true);
 };
@@ -88,13 +132,9 @@ const blockPopups = () => {
     if (url && isValidPopup(url)) {
       return originalOpen.apply(this, args);
     }
+    console.warn('Blocked popup:', url);
     return null;
   };
-
-  window.addEventListener('beforeunload', (event) => {
-    event.preventDefault();
-    return;
-  });
 
   // Block window.open calls
   Object.defineProperty(window, 'open', {
@@ -102,27 +142,6 @@ const blockPopups = () => {
       return null;
     }
   });
-};
-
-// Enhanced redirect validation
-const isValidRedirect = (url: string): boolean => {
-  try {
-    const urlObj = new URL(url, window.location.origin);
-    const trustedDomains = [
-      window.location.origin,
-      'api.themoviedb.org',
-      'vidsrc.me',
-      'image.tmdb.org',
-      'i.ibb.co'
-    ];
-    
-    return trustedDomains.some(domain => 
-      urlObj.origin === window.location.origin || 
-      urlObj.hostname.includes(domain)
-    );
-  } catch {
-    return false;
-  }
 };
 
 // Enhanced popup validation
