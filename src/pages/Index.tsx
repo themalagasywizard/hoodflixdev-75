@@ -166,7 +166,7 @@ const Index = () => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-[rgba(20,20,20,0.95)] backdrop-blur-md shadow-lg shadow-black/50 border-b border-[#2a2a2a]">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
-            src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
+            src="https://i.ibb.co/9ry4Nq8/New-Project-9.png" 
             alt="iHub" 
             className="h-8 md:h-10"
           />
