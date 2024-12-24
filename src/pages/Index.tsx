@@ -167,7 +167,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <img 
             src="https://i.ibb.co/wMf2zc7/hood-FLIX-7-8-2024.png" 
-            alt="Hoodflix" 
+            alt="iHub" 
             className="h-8 md:h-10"
           />
           
