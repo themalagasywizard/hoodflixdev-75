@@ -83,6 +83,26 @@ const Index = () => {
     }
   };
 
+  const fetchTVSeries = async () => {
+    try {
+      const responses = await Promise.all([
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`),
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=2`),
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=3`)
+      ]);
+      
+      const data = await Promise.all(responses.map(r => r.json()));
+      const allSeries = data.flatMap(d => d.results.map((series: any) => ({
+        ...series,
+        media_type: 'tv'
+      })));
+      
+      setMovies(allSeries);
+    } catch (error) {
+      console.error('Error fetching TV series:', error);
+    }
+  };
+
   const showAllCategories = () => {
     setSelectedCategory('all');
     fetchMovies();
@@ -204,6 +224,15 @@ const Index = () => {
                     </MenubarItem>
                   ))}
                 </MenubarContent>
+              </MenubarMenu>
+
+              <MenubarMenu>
+                <MenubarTrigger 
+                  className="text-white hover:text-[#ea384c] transition-all duration-300 ml-4"
+                  onClick={fetchTVSeries}
+                >
+                  Series
+                </MenubarTrigger>
               </MenubarMenu>
             </Menubar>
           </nav>
