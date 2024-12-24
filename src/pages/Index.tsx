@@ -4,6 +4,13 @@ import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
 import { translateText, translatePage } from '../utils/translate';
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
 
 interface Movie {
   id: string;
@@ -174,28 +181,31 @@ const Index = () => {
             <span className="ml-2 text-xl font-bold text-[#ea384c]">iHub</span>
           </div>
           
-          <nav className="flex-1 mx-8 overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-6">
-              <button
-                onClick={showAllCategories}
-                className="text-white hover:text-[#ea384c] transition-all duration-300"
-                data-translate
-                data-original-text="Home"
-              >
-                Home
-              </button>
-              {Object.entries(categories).map(([id, name]) => (
-                <button
-                  key={id}
-                  onClick={() => filterCategory(id)}
-                  className="text-white hover:text-[#ea384c] transition-all duration-300"
-                  data-translate
-                  data-original-text={name}
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
+          <nav className="flex-1 mx-8">
+            <Menubar className="bg-transparent border-none">
+              <MenubarMenu>
+                <MenubarTrigger className="text-white hover:text-[#ea384c] transition-all duration-300">
+                  Movies
+                </MenubarTrigger>
+                <MenubarContent className="bg-[#1a1a1a] border-[#2a2a2a]">
+                  <MenubarItem
+                    className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
+                    onClick={showAllCategories}
+                  >
+                    All Movies
+                  </MenubarItem>
+                  {Object.entries(categories).map(([id, name]) => (
+                    <MenubarItem
+                      key={id}
+                      className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
+                      onClick={() => filterCategory(id)}
+                    >
+                      {name}
+                    </MenubarItem>
+                  ))}
+                </MenubarContent>
+              </MenubarMenu>
+            </Menubar>
           </nav>
 
           <div className="flex items-center space-x-4">
