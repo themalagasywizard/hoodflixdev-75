@@ -33,6 +33,28 @@ const MediaDetails = ({
   const [episodes, setEpisodes] = React.useState<any[]>([]);
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
+  const clearVideoContainer = () => {
+    const videoContainer = document.getElementById('video-container');
+    if (videoContainer && videoContainer.firstChild) {
+      videoContainer.innerHTML = '';
+    }
+  };
+
+  const createVideoIframe = (url: string) => {
+    clearVideoContainer();
+    const videoContainer = document.getElementById('video-container');
+    if (videoContainer) {
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.style.width = '100%';
+      iframe.style.height = '600px';
+      iframe.frameBorder = '0';
+      iframe.allowFullscreen = true;
+      videoContainer.appendChild(iframe);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   React.useEffect(() => {
     const fetchSeasons = async () => {
       try {
@@ -78,20 +100,8 @@ const MediaDetails = ({
       onSelectEpisode(seasonNum, episodeNum);
     }
     const url = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${seasonNum}&episode=${episodeNum}`;
-    const videoContainer = document.getElementById('video-container');
-    if (videoContainer) {
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.style.width = '100%';
-      iframe.style.height = '600px';
-      iframe.frameBorder = '0';
-      iframe.allowFullscreen = true;
-      
-      videoContainer.innerHTML = '';
-      videoContainer.appendChild(iframe);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      onBack(); // Close the details window
-    }
+    createVideoIframe(url);
+    onBack(); // Close the details window
   };
 
   const handlePlayClick = () => {
@@ -99,20 +109,8 @@ const MediaDetails = ({
       handleEpisodeSelect(selectedSeason, 1);
     } else {
       const url = `https://vidsrc.me/embed/movie?tmdb=${id}`;
-      const videoContainer = document.getElementById('video-container');
-      if (videoContainer) {
-        const iframe = document.createElement('iframe');
-        iframe.src = url;
-        iframe.style.width = '100%';
-        iframe.style.height = '600px';
-        iframe.frameBorder = '0';
-        iframe.allowFullscreen = true;
-        
-        videoContainer.innerHTML = '';
-        videoContainer.appendChild(iframe);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        onBack(); // Close the details window
-      }
+      createVideoIframe(url);
+      onBack(); // Close the details window
     }
   };
 
