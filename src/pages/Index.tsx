@@ -15,6 +15,7 @@ interface Movie {
   name?: string;
   poster_path: string;
   media_type?: string;
+  first_air_date?: string;  // Added this property
 }
 
 const Index = () => {
