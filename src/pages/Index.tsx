@@ -1,17 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Search, ArrowLeft, Star } from 'lucide-react';
+import { Search, ArrowLeft, Star, X } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
 import MediaDetails from '../components/MediaDetails';
-import { translateText, translatePage } from '../utils/translate';
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
+import PasswordAuth from '../components/PasswordAuth';
+import { Button } from '@/components/ui/button';
 
 interface Movie {
   id: string;
@@ -33,6 +27,9 @@ const Index = () => {
   const [viewerCount, setViewerCount] = useState(500);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [selectedMediaDetails, setSelectedMediaDetails] = useState<any | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [page, setPage] = useState(1);
+  const [showPlayer, setShowPlayer] = useState(false);
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
@@ -78,115 +75,44 @@ const Index = () => {
   };
 
   useEffect(() => {
-    const storedDyslexicPref = localStorage.getItem('dyslexicFont') === 'true';
-    setIsDyslexicFont(storedDyslexicPref);
-    if (storedDyslexicPref) {
-      document.body.classList.add('dyslexic');
+    const auth = localStorage.getItem('isAuthenticated');
+    if (auth === 'true') {
+      setIsAuthenticated(true);
     }
-
     showAllCategories();
     fetchMovies();
   }, []);
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (pageNum = 1) => {
     try {
       const responses = await Promise.all([
-        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`),
-        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=2`),
-        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=3`)
+        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=${pageNum}`),
       ]);
       
       const data = await Promise.all(responses.map(r => r.json()));
-      const allMovies = data.flatMap(d => d.results);
+      const newMovies = data.flatMap(d => d.results);
       
-      setMovies(allMovies);
+      if (pageNum === 1) {
+        setMovies(newMovies);
+      } else {
+        setMovies(prev => [...prev, ...newMovies]);
+      }
     } catch (error) {
       console.error('Error fetching movies:', error);
     }
   };
 
-  const fetchTVSeries = async () => {
-    try {
-      const responses = await Promise.all([
-        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=1`),
-        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=2`),
-        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=3`)
-      ]);
-      
-      const data = await Promise.all(responses.map(r => r.json()));
-      const allSeries = data.flatMap(d => d.results.map((series: any) => ({
-        ...series,
-        media_type: 'tv'
-      })));
-      
-      setMovies(allSeries);
-    } catch (error) {
-      console.error('Error fetching TV series:', error);
-    }
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchMovies(nextPage);
   };
 
-  const fetchTVSeriesByCategory = async (categoryId: string) => {
-    try {
-      const responses = await Promise.all([1, 2, 3].map(page => 
-        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
-          .then(res => res.json())
-      ));
-      
-      const allSeries = responses.flatMap(data => data.results.map((series: any) => ({
-        ...series,
-        media_type: 'tv'
-      })));
-      
-      setMovies(allSeries);
-    } catch (error) {
-      console.error('Error fetching TV series by category:', error);
-    }
-  };
-
-  const showAllCategories = () => {
-    setSelectedCategory('all');
-    fetchMovies();
-  };
-
-  const filterCategory = async (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    try {
-      const [moviesData, tvShowsData] = await Promise.all([
-        Promise.all([1, 2, 3].map(page => 
-          fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
-            .then(res => res.json())
-        )),
-        Promise.all([1, 2, 3].map(page => 
-          fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
-            .then(res => res.json())
-        ))
-      ]);
-      
-      const allMovies = moviesData.flatMap(data => data.results);
-      const allTvShows = tvShowsData.flatMap(data => data.results);
-      
-      setMovies([...allMovies, ...allTvShows]);
-    } catch (error) {
-      console.error('Error fetching category:', error);
-    }
-  };
-
-  const handleSearch = async (query: string) => {
-    if (query.length < 3) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${query}&page=1`
-      );
-      const data = await response.json();
-      setSearchResults(data.results.filter((result: Movie) => 
-        (result.media_type === 'movie' || result.media_type === 'tv') && result.poster_path
-      ));
-    } catch (error) {
-      console.error('Error searching:', error);
+  const closePlayer = () => {
+    setShowPlayer(false);
+    const videoContainer = document.getElementById('video-container');
+    if (videoContainer) {
+      videoContainer.innerHTML = '';
     }
   };
 
@@ -206,58 +132,14 @@ const Index = () => {
     if (videoContainer) {
       videoContainer.innerHTML = '';
       videoContainer.appendChild(iframe);
+      setShowPlayer(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const toggleDyslexicFont = () => {
-    const newValue = !isDyslexicFont;
-    setIsDyslexicFont(newValue);
-    localStorage.setItem('dyslexicFont', String(newValue));
-    document.body.classList.toggle('dyslexic', newValue);
-  };
-
-  const handleLanguageChange = async (lang: string) => {
-    setCurrentLanguage(lang);
-    await translatePage(lang);
-    
-    document.documentElement.lang = lang;
-    
-    localStorage.setItem('preferredLanguage', lang);
-  };
-
-  const handleMediaClick = async (media: any) => {
-    setSelectedMedia(media);
-    try {
-      const response = await fetch(
-        `https://api.themoviedb.org/3/${media.media_type || 'movie'}/${media.id}?api_key=${apiKey}`
-      );
-      const details = await response.json();
-      setSelectedMediaDetails(details);
-    } catch (error) {
-      console.error('Error fetching media details:', error);
-    }
-  };
-
-  const handleEpisodeSelect = (seasonNum: number, episodeNum: number) => {
-    if (selectedMedia) {
-      const url = `https://vidsrc.me/embed/tv?tmdb=${selectedMedia.id}&season=${seasonNum}&episode=${episodeNum}`;
-      const videoContainer = document.getElementById('video-container');
-      if (videoContainer) {
-        videoContainer.innerHTML = '';
-        const iframe = document.createElement('iframe');
-        iframe.src = url;
-        iframe.style.width = '100%';
-        iframe.style.height = '600px';
-        iframe.frameBorder = '0';
-        iframe.allowFullscreen = true;
-        videoContainer.appendChild(iframe);
-        setSelectedMedia(null);
-        setSelectedMediaDetails(null);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  };
+  if (!isAuthenticated) {
+    return <PasswordAuth onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#141414] text-white relative select-none">
@@ -343,7 +225,17 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto pt-20 relative z-10">
-        <div id="video-container" className="mb-8"></div>
+        <div id="video-container" className="mb-8 relative">
+          {showPlayer && (
+            <Button
+              onClick={closePlayer}
+              className="absolute top-4 right-4 bg-[#ea384c] hover:bg-[#ff4d63] z-20"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Close Player
+            </Button>
+          )}
+        </div>
         
         {selectedMediaDetails && (
           <MediaDetails
@@ -455,13 +347,23 @@ const Index = () => {
           ))}
         </div>
 
+        {movies.length > 0 && (
+          <div className="flex justify-center mt-8 mb-12">
+            <Button
+              onClick={loadMore}
+              className="bg-[#ea384c] hover:bg-[#ff4d63]"
+            >
+              Load More
+            </Button>
+          </div>
+        )}
       </main>
 
       <footer className="mt-8 pb-12 text-center text-sm text-gray-400">
         <p className="font-medium">
           © Copyright {new Date().getFullYear()} by{' '}
           <span className="text-[#ea384c] hover:text-[#ff4d63] transition-colors duration-300">
-            aidenwrld
+            Oz
           </span>
         </p>
       </footer>
