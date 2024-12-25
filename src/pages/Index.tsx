@@ -154,6 +154,20 @@ const Index = () => {
       
       const details = await response.json();
       details.media_type = mediaType; // Ensure media_type is set correctly
+
+      // Fetch the genre/category information
+      const genreIds = details.genre_ids || (details.genres && details.genres.map((g: any) => g.id));
+      let category = '';
+      
+      if (genreIds && genreIds.length > 0) {
+        if (mediaType === 'movie') {
+          category = categories[genreIds[0]] || '';
+        } else {
+          category = seriesCategories[genreIds[0]] || '';
+        }
+      }
+      
+      details.category = category;
       setSelectedMediaDetails(details);
     } catch (error) {
       console.error('Error fetching media details:', error);
@@ -279,6 +293,7 @@ const Index = () => {
               setSelectedMediaDetails(null);
             }}
             onSelectEpisode={handleEpisodeSelect}
+            category={selectedMediaDetails.category}
           />
         )}
 
