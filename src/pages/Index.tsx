@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, Star } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
+import MediaDetails from '../components/MediaDetails';
 import { translateText, translatePage } from '../utils/translate';
 import {
   Menubar,
@@ -30,6 +31,8 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [movies, setMovies] = useState<Movie[]>([]);
   const [viewerCount, setViewerCount] = useState(500);
+  const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
+  const [selectedMediaDetails, setSelectedMediaDetails] = useState<any | null>(null);
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
@@ -223,6 +226,39 @@ const Index = () => {
     localStorage.setItem('preferredLanguage', lang);
   };
 
+  const handleMediaClick = async (media: any) => {
+    setSelectedMedia(media);
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/${media.media_type || 'movie'}/${media.id}?api_key=${apiKey}`
+      );
+      const details = await response.json();
+      setSelectedMediaDetails(details);
+    } catch (error) {
+      console.error('Error fetching media details:', error);
+    }
+  };
+
+  const handleEpisodeSelect = (seasonNum: number, episodeNum: number) => {
+    if (selectedMedia) {
+      const url = `https://vidsrc.me/embed/tv?tmdb=${selectedMedia.id}&season=${seasonNum}&episode=${episodeNum}`;
+      const videoContainer = document.getElementById('video-container');
+      if (videoContainer) {
+        videoContainer.innerHTML = '';
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.width = '100%';
+        iframe.style.height = '600px';
+        iframe.frameBorder = '0';
+        iframe.allowFullscreen = true;
+        videoContainer.appendChild(iframe);
+        setSelectedMedia(null);
+        setSelectedMediaDetails(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#141414] text-white relative select-none">
       <StarryBackground />
@@ -309,6 +345,22 @@ const Index = () => {
       <main className="container mx-auto pt-20 relative z-10">
         <div id="video-container" className="mb-8"></div>
         
+        {selectedMediaDetails && (
+          <MediaDetails
+            id={selectedMedia.id}
+            title={selectedMediaDetails.title || selectedMediaDetails.name}
+            overview={selectedMediaDetails.overview}
+            rating={selectedMediaDetails.vote_average}
+            posterPath={selectedMediaDetails.poster_path}
+            mediaType={selectedMedia.media_type || 'movie'}
+            onBack={() => {
+              setSelectedMedia(null);
+              setSelectedMediaDetails(null);
+            }}
+            onSelectEpisode={handleEpisodeSelect}
+          />
+        )}
+
         {showSearch && (
           <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4 overflow-y-auto">
             <div className="max-w-5xl mx-auto pt-20">
@@ -349,7 +401,7 @@ const Index = () => {
                     key={result.id}
                     className="relative group transition-transform duration-300 hover:scale-105 cursor-pointer animate-fade-in aspect-[2/3]"
                     onClick={() => {
-                      playMedia(result.id, result.media_type || 'movie');
+                      handleMediaClick(result);
                       setShowSearch(false);
                       setSearchQuery('');
                       setSearchResults([]);
@@ -382,7 +434,7 @@ const Index = () => {
               style={{
                 animationDelay: `${index * 50}ms`
               }}
-              onClick={() => playMedia(movie.id, movie.media_type || 'movie')}
+              onClick={() => handleMediaClick(movie)}
             >
               <img
                 src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
