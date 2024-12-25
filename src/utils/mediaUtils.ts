@@ -10,18 +10,20 @@ export const filterCategory = async (categoryId: string) => {
 
 export const fetchTVSeries = async () => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc`
+    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_null_first_air_dates=false`
   );
   const data = await response.json();
-  return data.results || [];
+  // Filter out any items that don't have first_air_date (these might be movies)
+  return (data.results || []).filter((item: any) => item.first_air_date);
 };
 
 export const fetchTVSeriesByCategory = async (categoryId: string) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}`
+    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&language=en-US&sort_by=popularity.desc&include_null_first_air_dates=false`
   );
   const data = await response.json();
-  return data.results || [];
+  // Filter out any items that don't have first_air_date (these might be movies)
+  return (data.results || []).filter((item: any) => item.first_air_date);
 };
 
 export const handleSearch = async (query: string) => {
@@ -39,8 +41,9 @@ export const fetchMovies = async (page: number = 1) => {
     `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=${page}`
   );
   const data = await response.json();
+  // Filter out any items that don't have release_date (these might be TV shows)
   return {
-    results: data.results || [],
+    results: (data.results || []).filter((item: any) => item.release_date),
     total_pages: data.total_pages || 1
   };
 };
