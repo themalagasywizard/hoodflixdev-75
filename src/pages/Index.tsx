@@ -103,9 +103,27 @@ const Index = () => {
   };
 
   const handleFilterCategory = async (categoryId: string) => {
-    const results = await filterCategory(categoryId);
+    const { results, total_pages } = await filterCategory(categoryId);
     setMovies(results);
+    setTotalPages(total_pages);
+    setSelectedCategory(categoryId);
     setPage(1);
+  };
+
+  const loadMore = async () => {
+    const nextPage = page + 1;
+    if (nextPage <= totalPages) {
+      let newResults;
+      if (selectedCategory === 'all') {
+        const { results } = await fetchMovies(nextPage);
+        newResults = results;
+      } else {
+        const { results } = await filterCategory(selectedCategory, nextPage);
+        newResults = results;
+      }
+      setMovies(prevMovies => [...prevMovies, ...newResults]);
+      setPage(nextPage);
+    }
   };
 
   const handleFetchTVSeries = async () => {
@@ -118,15 +136,6 @@ const Index = () => {
     const results = await fetchTVSeriesByCategory(categoryId);
     setMovies(results);
     setPage(1);
-  };
-
-  const loadMore = async () => {
-    const nextPage = page + 1;
-    if (nextPage <= totalPages) {
-      const { results } = await fetchMovies(nextPage);
-      setMovies(prevMovies => [...prevMovies, ...results]);
-      setPage(nextPage);
-    }
   };
 
   const handleSearchQuery = async (query: string) => {

@@ -1,11 +1,14 @@
 const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
-export const filterCategory = async (categoryId: string) => {
+export const filterCategory = async (categoryId: string, page: number = 1) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}`
+    `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`
   );
   const data = await response.json();
-  return data.results || [];
+  return {
+    results: data.results || [],
+    total_pages: data.total_pages || 1
+  };
 };
 
 export const fetchTVSeries = async () => {
