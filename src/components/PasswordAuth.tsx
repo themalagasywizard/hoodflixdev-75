@@ -6,7 +6,7 @@ import { useToast } from './ui/use-toast';
 const PasswordAuth = ({ onAuthenticated }: { onAuthenticated: () => void }) => {
   const [password, setPassword] = useState('');
   const { toast } = useToast();
-  const correctPassword = 'ihub2024'; // In a real app, this would be stored securely
+  const correctPassword = 'trumbletv25'; // Changed password here
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
