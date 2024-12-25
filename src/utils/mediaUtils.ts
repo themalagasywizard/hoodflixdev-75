@@ -33,3 +33,11 @@ export const handleSearch = async (query: string) => {
   const data = await response.json();
   return data.results || [];
 };
+
+export const fetchMovies = async (page: number = 1) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=${page}`
+  );
+  const data = await response.json();
+  return data.results || [];
+};

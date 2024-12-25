@@ -7,7 +7,7 @@ import MediaDetails from '../components/MediaDetails';
 import PasswordAuth from '../components/PasswordAuth';
 import MediaNavigation from '../components/MediaNavigation';
 import { Button } from '@/components/ui/button';
-import { filterCategory, fetchTVSeries, fetchTVSeriesByCategory, handleSearch } from '../utils/mediaUtils';
+import { filterCategory, fetchTVSeries, fetchTVSeriesByCategory, handleSearch, fetchMovies } from '../utils/mediaUtils';
 
 interface Movie {
   id: string;
@@ -374,3 +374,4 @@ const Index = () => {
 };
 
 export default Index;
+
