@@ -30,28 +30,42 @@ const MediaDetails = ({
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
   React.useEffect(() => {
-    if (mediaType === 'tv') {
-      fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`)
-        .then(res => res.json())
-        .then(data => {
-          setSeasons(data.seasons || []);
+    const fetchSeasons = async () => {
+      if (mediaType === 'tv') {
+        try {
+          const response = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`);
+          const data = await response.json();
           if (data.seasons && data.seasons.length > 0) {
+            setSeasons(data.seasons);
             handleSeasonSelect(data.seasons[0].season_number);
           }
-        });
-    }
+        } catch (error) {
+          console.error('Error fetching seasons:', error);
+        }
+      }
+    };
+
+    fetchSeasons();
   }, [id, mediaType]);
 
   const handleSeasonSelect = async (seasonNumber: number) => {
     setSelectedSeason(seasonNumber);
-    const response = await fetch(
-      `https://api.themoviedb.org/3/tv/${id}/season/${seasonNumber}?api_key=${apiKey}`
-    );
-    const data = await response.json();
-    setEpisodes(data.episodes || []);
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/tv/${id}/season/${seasonNumber}?api_key=${apiKey}`
+      );
+      const data = await response.json();
+      setEpisodes(data.episodes || []);
+    } catch (error) {
+      console.error('Error fetching episodes:', error);
+      setEpisodes([]);
+    }
   };
 
   const handleEpisodeSelect = (seasonNum: number, episodeNum: number) => {
+    if (onSelectEpisode) {
+      onSelectEpisode(seasonNum, episodeNum);
+    }
     const url = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${seasonNum}&episode=${episodeNum}`;
     const videoContainer = document.getElementById('video-container');
     if (videoContainer) {

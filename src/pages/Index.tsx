@@ -120,7 +120,10 @@ const Index = () => {
 
   const handleMediaClick = async (media: Movie) => {
     setSelectedMedia(media);
-    const mediaType = media.media_type || (media.name ? 'tv' : 'movie');
+    // Improved media type detection logic
+    const mediaType = media.media_type || 
+                     (media.name ? 'tv' : 'movie') || 
+                     (media.first_air_date ? 'tv' : 'movie');
     
     try {
       const response = await fetch(
@@ -132,6 +135,8 @@ const Index = () => {
       }
       
       const details = await response.json();
+      // Set the correct media type in the details
+      details.media_type = mediaType;
       setSelectedMediaDetails(details);
     } catch (error) {
       console.error('Error fetching media details:', error);
