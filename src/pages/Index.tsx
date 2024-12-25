@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
 import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
@@ -55,6 +55,25 @@ const Index = () => {
     '37': 'Western'
   };
 
+  const seriesCategories = {
+    '10759': 'Action & Adventure',
+    '16': 'Animation',
+    '35': 'Comedy',
+    '80': 'Crime',
+    '99': 'Documentary',
+    '18': 'Drama',
+    '10751': 'Family',
+    '10762': 'Kids',
+    '9648': 'Mystery',
+    '10763': 'News',
+    '10764': 'Reality',
+    '10765': 'Sci-Fi & Fantasy',
+    '10766': 'Soap',
+    '10767': 'Talk',
+    '10768': 'War & Politics',
+    '37': 'Western'
+  };
+
   useEffect(() => {
     const storedDyslexicPref = localStorage.getItem('dyslexicFont') === 'true';
     setIsDyslexicFont(storedDyslexicPref);
@@ -100,6 +119,24 @@ const Index = () => {
       setMovies(allSeries);
     } catch (error) {
       console.error('Error fetching TV series:', error);
+    }
+  };
+
+  const fetchTVSeriesByCategory = async (categoryId: string) => {
+    try {
+      const responses = await Promise.all([1, 2, 3].map(page => 
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&page=${page}`)
+          .then(res => res.json())
+      ));
+      
+      const allSeries = responses.flatMap(data => data.results.map((series: any) => ({
+        ...series,
+        media_type: 'tv'
+      })));
+      
+      setMovies(allSeries);
+    } catch (error) {
+      console.error('Error fetching TV series by category:', error);
     }
   };
 
@@ -227,12 +264,26 @@ const Index = () => {
               </MenubarMenu>
 
               <MenubarMenu>
-                <MenubarTrigger 
-                  className="text-white hover:text-[#ea384c] transition-all duration-300 ml-4"
-                  onClick={fetchTVSeries}
-                >
+                <MenubarTrigger className="text-white hover:text-[#ea384c] transition-all duration-300 ml-4">
                   Series
                 </MenubarTrigger>
+                <MenubarContent className="bg-[#1a1a1a] border-[#2a2a2a] max-h-[70vh] overflow-y-auto">
+                  <MenubarItem
+                    className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
+                    onClick={fetchTVSeries}
+                  >
+                    All Series
+                  </MenubarItem>
+                  {Object.entries(seriesCategories).map(([id, name]) => (
+                    <MenubarItem
+                      key={id}
+                      className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
+                      onClick={() => fetchTVSeriesByCategory(id)}
+                    >
+                      {name}
+                    </MenubarItem>
+                  ))}
+                </MenubarContent>
               </MenubarMenu>
             </Menubar>
           </nav>
@@ -261,23 +312,36 @@ const Index = () => {
         {showSearch && (
           <div className="fixed inset-0 bg-[#141414]/95 z-50 p-4 overflow-y-auto">
             <div className="max-w-5xl mx-auto pt-20">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  handleSearch(e.target.value);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
+              <div className="flex items-center gap-4 mb-6">
+                <button
+                  onClick={() => {
                     setShowSearch(false);
                     setSearchQuery('');
                     setSearchResults([]);
-                  }
-                }}
-                placeholder="Search movies and TV shows..."
-                className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none select-text"
-              />
+                  }}
+                  className="p-2 rounded-full hover:bg-[rgba(234,56,76,0.1)] transition-colors text-[#ea384c]"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    handleSearch(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setShowSearch(false);
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }
+                  }}
+                  placeholder="Search movies and TV shows..."
+                  className="w-full p-4 bg-[#2a2a2a] rounded-lg text-white placeholder:text-white/50 border-none outline-none select-text"
+                  autoFocus
+                />
+              </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-8 pb-20 animate-fade-in">
                 {searchResults.map((result) => (
