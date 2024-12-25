@@ -30,7 +30,7 @@ const MediaNavigation = ({
         <MenubarTrigger className="text-white hover:text-[#ea384c] transition-all duration-300">
           Movies
         </MenubarTrigger>
-        <MenubarContent className="bg-[#1a1a1a] border-[#2a2a2a]">
+        <MenubarContent className="bg-[#1a1a1a] border-[#2a2a2a] max-h-[70vh] overflow-y-auto">
           <MenubarItem
             className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
             onClick={onShowAll}

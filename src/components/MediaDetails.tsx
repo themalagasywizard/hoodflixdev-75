@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Star, Play } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import { determineMediaType } from '../utils/mediaTypeUtils';
 
 interface MediaDetailsProps {
@@ -13,6 +14,7 @@ interface MediaDetailsProps {
   mediaType: 'movie' | 'tv';
   onBack: () => void;
   onSelectEpisode?: (seasonNum: number, episodeNum: number) => void;
+  category?: string;
 }
 
 const MediaDetails = ({ 
@@ -23,7 +25,8 @@ const MediaDetails = ({
   posterPath,
   mediaType,
   onBack,
-  onSelectEpisode 
+  onSelectEpisode,
+  category 
 }: MediaDetailsProps) => {
   const [seasons, setSeasons] = React.useState<any[]>([]);
   const [selectedSeason, setSelectedSeason] = React.useState<number | null>(null);
@@ -33,11 +36,9 @@ const MediaDetails = ({
   React.useEffect(() => {
     const fetchSeasons = async () => {
       try {
-        // Force a TV show check using our utility
         const response = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`);
         const data = await response.json();
         
-        // If we get valid seasons data, it's definitely a TV show
         if (data.seasons && data.seasons.length > 0) {
           setSeasons(data.seasons);
           handleSeasonSelect(data.seasons[0].season_number);
@@ -48,7 +49,6 @@ const MediaDetails = ({
       }
     };
 
-    // Always attempt to fetch seasons - if it fails, it's likely a movie
     fetchSeasons();
   }, [id]);
 
@@ -83,13 +83,13 @@ const MediaDetails = ({
       videoContainer.innerHTML = '';
       videoContainer.appendChild(iframe);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      onBack(); // Close the details window
     }
   };
 
   const handlePlayClick = () => {
-    // If we have seasons data, treat it as a TV show regardless of initial mediaType
-    if (seasons.length > 0) {
-      handleEpisodeSelect(seasons[0].season_number, 1);
+    if (seasons.length > 0 && selectedSeason !== null) {
+      handleEpisodeSelect(selectedSeason, 1);
     } else {
       const url = `https://vidsrc.me/embed/movie?tmdb=${id}`;
       const videoContainer = document.getElementById('video-container');
@@ -104,6 +104,7 @@ const MediaDetails = ({
         videoContainer.innerHTML = '';
         videoContainer.appendChild(iframe);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        onBack(); // Close the details window
       }
     }
   };
@@ -128,7 +129,14 @@ const MediaDetails = ({
                 className="w-32 sm:w-40 rounded-lg shadow-lg self-center sm:self-start"
               />
               <div className="flex-1">
-                <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center sm:text-left">{title}</h2>
+                <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-2 mb-2">
+                  <h2 className="text-xl sm:text-2xl font-bold text-center sm:text-left">{title}</h2>
+                  {category && (
+                    <Badge variant="secondary" className="bg-[#ea384c]/10 text-[#ea384c] border-[#ea384c]/20">
+                      {category}
+                    </Badge>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mb-4 justify-center sm:justify-start">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
                   <span className="text-lg">{rating.toFixed(1)}</span>
@@ -140,7 +148,7 @@ const MediaDetails = ({
                   className="w-full sm:w-auto bg-[#ea384c] hover:bg-[#ff4d63] mb-6"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  {seasons.length > 0 ? 'Play First Episode' : 'Play Movie'}
+                  {seasons.length > 0 ? 'Play Episode' : 'Play Movie'}
                 </Button>
 
                 {seasons.length > 0 && (
