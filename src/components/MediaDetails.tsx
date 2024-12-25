@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft, Star, Play } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
+import { Button } from './ui/button';
 
 interface MediaDetailsProps {
   id: string;
@@ -45,6 +46,26 @@ const MediaDetails = ({
     onSelectEpisode?.(seasonNum, episodeNum);
   };
 
+  const handlePlayClick = () => {
+    const url = mediaType === 'movie' 
+      ? `https://vidsrc.me/embed/movie?tmdb=${id}` 
+      : `https://vidsrc.me/embed/tv?tmdb=${id}`;
+    
+    const videoContainer = document.getElementById('video-container');
+    if (videoContainer) {
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.style.width = '100%';
+      iframe.style.height = '600px';
+      iframe.frameBorder = '0';
+      iframe.allowFullscreen = true;
+      
+      videoContainer.innerHTML = '';
+      videoContainer.appendChild(iframe);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/95 z-50 overflow-y-auto p-4">
       <div className="max-w-4xl mx-auto pt-20">
@@ -71,6 +92,14 @@ const MediaDetails = ({
                   <span className="text-lg">{rating.toFixed(1)}</span>
                 </div>
                 <p className="text-gray-300 mb-6">{overview}</p>
+
+                <Button 
+                  onClick={handlePlayClick}
+                  className="bg-[#ea384c] hover:bg-[#ff4d63] mb-6"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Play Now
+                </Button>
 
                 {mediaType === 'tv' && seasons.length > 0 && (
                   <div>

@@ -28,7 +28,7 @@ const PasswordAuth = ({ onAuthenticated }: { onAuthenticated: () => void }) => {
         <h2 className="text-2xl font-bold text-white mb-6 text-center">Enter Password</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            type="password"
+            type="text"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter password"
