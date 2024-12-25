@@ -120,12 +120,24 @@ const Index = () => {
 
   const handleMediaClick = async (media: Movie) => {
     setSelectedMedia(media);
-    const type = media.media_type || 'movie';
-    const response = await fetch(
-      `https://api.themoviedb.org/3/${type}/${media.id}?api_key=${apiKey}`
-    );
-    const details = await response.json();
-    setSelectedMediaDetails(details);
+    const mediaType = media.media_type || (media.name ? 'tv' : 'movie');
+    
+    try {
+      const response = await fetch(
+        `https://api.themoviedb.org/3/${mediaType}/${media.id}?api_key=${apiKey}`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const details = await response.json();
+      setSelectedMediaDetails(details);
+    } catch (error) {
+      console.error('Error fetching media details:', error);
+      setSelectedMedia(null);
+      setSelectedMediaDetails(null);
+    }
   };
 
   const loadMore = () => {
@@ -374,4 +386,3 @@ const Index = () => {
 };
 
 export default Index;
-
