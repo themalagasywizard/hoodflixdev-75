@@ -110,34 +110,34 @@ const MediaDetails = ({
 
   return (
     <div className="fixed inset-0 bg-black/95 z-50 overflow-y-auto p-4">
-      <div className="max-w-4xl mx-auto pt-20">
+      <div className="max-w-4xl mx-auto pt-16 sm:pt-20">
         <button
           onClick={onBack}
-          className="mb-6 flex items-center gap-2 text-[#ea384c] hover:text-[#ff4d63] transition-colors"
+          className="mb-4 flex items-center gap-2 text-[#ea384c] hover:text-[#ff4d63] transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           Back to browsing
         </button>
 
         <Card className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
-          <CardContent className="p-6">
-            <div className="flex gap-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
               <img
                 src={`https://image.tmdb.org/t/p/w500${posterPath}`}
                 alt={title}
-                className="w-48 rounded-lg shadow-lg"
+                className="w-32 sm:w-40 rounded-lg shadow-lg self-center sm:self-start"
               />
               <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-2">{title}</h2>
-                <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center sm:text-left">{title}</h2>
+                <div className="flex items-center gap-2 mb-4 justify-center sm:justify-start">
                   <Star className="w-5 h-5 text-yellow-400 fill-current" />
                   <span className="text-lg">{rating.toFixed(1)}</span>
                 </div>
-                <p className="text-gray-300 mb-6">{overview}</p>
+                <p className="text-gray-300 mb-6 text-sm sm:text-base">{overview}</p>
 
                 <Button 
                   onClick={handlePlayClick}
-                  className="bg-[#ea384c] hover:bg-[#ff4d63] mb-6"
+                  className="w-full sm:w-auto bg-[#ea384c] hover:bg-[#ff4d63] mb-6"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   {seasons.length > 0 ? 'Play First Episode' : 'Play Movie'}
@@ -145,19 +145,19 @@ const MediaDetails = ({
 
                 {seasons.length > 0 && (
                   <div>
-                    <h3 className="text-xl font-semibold mb-4">Seasons</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <h3 className="text-lg font-semibold mb-4">Seasons</h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-4">
                       {seasons.map((season) => (
                         <button
                           key={season.season_number}
                           onClick={() => handleSeasonSelect(season.season_number)}
-                          className={`p-3 rounded-lg border transition-all ${
+                          className={`p-2 sm:p-3 rounded-lg border text-sm sm:text-base transition-all ${
                             selectedSeason === season.season_number
                               ? 'border-[#ea384c] bg-[#ea384c]/10'
                               : 'border-[#2a2a2a] hover:border-[#ea384c]/50'
                           }`}
                         >
-                          Season {season.season_number}
+                          S{season.season_number}
                         </button>
                       ))}
                     </div>
@@ -165,14 +165,14 @@ const MediaDetails = ({
                     {selectedSeason !== null && episodes.length > 0 && (
                       <div className="mt-6">
                         <h4 className="text-lg font-semibold mb-4">Episodes</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-4">
                           {episodes.map((episode) => (
                             <button
                               key={episode.episode_number}
                               onClick={() => handleEpisodeSelect(selectedSeason, episode.episode_number)}
-                              className="p-3 rounded-lg border border-[#2a2a2a] hover:border-[#ea384c]/50 transition-all"
+                              className="p-2 sm:p-3 rounded-lg border border-[#2a2a2a] hover:border-[#ea384c]/50 transition-all text-sm sm:text-base"
                             >
-                              Episode {episode.episode_number}
+                              E{episode.episode_number}
                             </button>
                           ))}
                         </div>
