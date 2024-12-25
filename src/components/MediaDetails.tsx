@@ -32,24 +32,25 @@ const MediaDetails = ({
 
   React.useEffect(() => {
     const fetchSeasons = async () => {
-      // Always fetch seasons for TV shows, regardless of initial mediaType
-      const detectedMediaType = mediaType === 'tv' ? 'tv' : 'movie';
-      if (detectedMediaType === 'tv') {
-        try {
-          const response = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`);
-          const data = await response.json();
-          if (data.seasons && data.seasons.length > 0) {
-            setSeasons(data.seasons);
-            handleSeasonSelect(data.seasons[0].season_number);
-          }
-        } catch (error) {
-          console.error('Error fetching seasons:', error);
+      try {
+        // Force a TV show check using our utility
+        const response = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`);
+        const data = await response.json();
+        
+        // If we get valid seasons data, it's definitely a TV show
+        if (data.seasons && data.seasons.length > 0) {
+          setSeasons(data.seasons);
+          handleSeasonSelect(data.seasons[0].season_number);
         }
+      } catch (error) {
+        console.error('Error fetching seasons:', error);
+        setSeasons([]);
       }
     };
 
+    // Always attempt to fetch seasons - if it fails, it's likely a movie
     fetchSeasons();
-  }, [id, mediaType]);
+  }, [id]);
 
   const handleSeasonSelect = async (seasonNumber: number) => {
     setSelectedSeason(seasonNumber);
@@ -86,7 +87,10 @@ const MediaDetails = ({
   };
 
   const handlePlayClick = () => {
-    if (mediaType === 'movie') {
+    // If we have seasons data, treat it as a TV show regardless of initial mediaType
+    if (seasons.length > 0) {
+      handleEpisodeSelect(seasons[0].season_number, 1);
+    } else {
       const url = `https://vidsrc.me/embed/movie?tmdb=${id}`;
       const videoContainer = document.getElementById('video-container');
       if (videoContainer) {
@@ -101,8 +105,6 @@ const MediaDetails = ({
         videoContainer.appendChild(iframe);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    } else if (selectedSeason !== null && episodes.length > 0) {
-      handleEpisodeSelect(selectedSeason, 1);
     }
   };
 
@@ -138,10 +140,10 @@ const MediaDetails = ({
                   className="bg-[#ea384c] hover:bg-[#ff4d63] mb-6"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  {mediaType === 'movie' ? 'Play Movie' : 'Play First Episode'}
+                  {seasons.length > 0 ? 'Play First Episode' : 'Play Movie'}
                 </Button>
 
-                {mediaType === 'tv' && seasons.length > 0 && (
+                {seasons.length > 0 && (
                   <div>
                     <h3 className="text-xl font-semibold mb-4">Seasons</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
