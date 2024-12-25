@@ -26,6 +26,7 @@ const MediaDetails = ({
 }: MediaDetailsProps) => {
   const [seasons, setSeasons] = React.useState<any[]>([]);
   const [selectedSeason, setSelectedSeason] = React.useState<number | null>(null);
+  const [episodes, setEpisodes] = React.useState<any[]>([]);
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
   React.useEffect(() => {
@@ -34,23 +35,24 @@ const MediaDetails = ({
         .then(res => res.json())
         .then(data => {
           setSeasons(data.seasons || []);
+          if (data.seasons && data.seasons.length > 0) {
+            handleSeasonSelect(data.seasons[0].season_number);
+          }
         });
     }
   }, [id, mediaType]);
 
   const handleSeasonSelect = async (seasonNumber: number) => {
     setSelectedSeason(seasonNumber);
+    const response = await fetch(
+      `https://api.themoviedb.org/3/tv/${id}/season/${seasonNumber}?api_key=${apiKey}`
+    );
+    const data = await response.json();
+    setEpisodes(data.episodes || []);
   };
 
   const handleEpisodeSelect = (seasonNum: number, episodeNum: number) => {
-    onSelectEpisode?.(seasonNum, episodeNum);
-  };
-
-  const handlePlayClick = () => {
-    const url = mediaType === 'movie' 
-      ? `https://vidsrc.me/embed/movie?tmdb=${id}` 
-      : `https://vidsrc.me/embed/tv?tmdb=${id}`;
-    
+    const url = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${seasonNum}&episode=${episodeNum}`;
     const videoContainer = document.getElementById('video-container');
     if (videoContainer) {
       const iframe = document.createElement('iframe');
@@ -63,6 +65,27 @@ const MediaDetails = ({
       videoContainer.innerHTML = '';
       videoContainer.appendChild(iframe);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePlayClick = () => {
+    if (mediaType === 'movie') {
+      const url = `https://vidsrc.me/embed/movie?tmdb=${id}`;
+      const videoContainer = document.getElementById('video-container');
+      if (videoContainer) {
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.style.width = '100%';
+        iframe.style.height = '600px';
+        iframe.frameBorder = '0';
+        iframe.allowFullscreen = true;
+        
+        videoContainer.innerHTML = '';
+        videoContainer.appendChild(iframe);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else if (selectedSeason !== null && episodes.length > 0) {
+      handleEpisodeSelect(selectedSeason, 1);
     }
   };
 
@@ -98,7 +121,7 @@ const MediaDetails = ({
                   className="bg-[#ea384c] hover:bg-[#ff4d63] mb-6"
                 >
                   <Play className="w-5 h-5 mr-2" />
-                  Play Now
+                  {mediaType === 'movie' ? 'Play Movie' : 'Play First Episode'}
                 </Button>
 
                 {mediaType === 'tv' && seasons.length > 0 && (
@@ -120,17 +143,17 @@ const MediaDetails = ({
                       ))}
                     </div>
 
-                    {selectedSeason !== null && (
+                    {selectedSeason !== null && episodes.length > 0 && (
                       <div className="mt-6">
                         <h4 className="text-lg font-semibold mb-4">Episodes</h4>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                          {Array.from({ length: seasons[selectedSeason]?.episode_count || 0 }).map((_, index) => (
+                          {episodes.map((episode) => (
                             <button
-                              key={index}
-                              onClick={() => handleEpisodeSelect(selectedSeason, index + 1)}
+                              key={episode.episode_number}
+                              onClick={() => handleEpisodeSelect(selectedSeason, episode.episode_number)}
                               className="p-3 rounded-lg border border-[#2a2a2a] hover:border-[#ea384c]/50 transition-all"
                             >
-                              Episode {index + 1}
+                              Episode {episode.episode_number}
                             </button>
                           ))}
                         </div>
