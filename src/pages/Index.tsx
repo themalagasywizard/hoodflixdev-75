@@ -36,6 +36,7 @@ const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [page, setPage] = useState(1);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
   const apiKey = '650ff50a48a7379fd245c173ad422ff8';
 
@@ -86,30 +87,48 @@ const Index = () => {
       setIsAuthenticated(true);
     }
     showAllCategories();
-    fetchMovies();
+    loadInitialMovies();
   }, []);
 
+  const loadInitialMovies = async () => {
+    const { results, total_pages } = await fetchMovies(1);
+    setMovies(results);
+    setTotalPages(total_pages);
+    setPage(1);
+  };
+
   const showAllCategories = async () => {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc`
-    );
-    const data = await response.json();
-    setMovies(data.results || []);
+    const { results, total_pages } = await fetchMovies(1);
+    setMovies(results);
+    setTotalPages(total_pages);
+    setPage(1);
   };
 
   const handleFilterCategory = async (categoryId: string) => {
     const results = await filterCategory(categoryId);
     setMovies(results);
+    setPage(1);
   };
 
   const handleFetchTVSeries = async () => {
     const results = await fetchTVSeries();
     setMovies(results);
+    setPage(1);
   };
 
   const handleFetchTVSeriesByCategory = async (categoryId: string) => {
     const results = await fetchTVSeriesByCategory(categoryId);
     setMovies(results);
+    setPage(1);
+  };
+
+  const loadMore = async () => {
+    const nextPage = page + 1;
+    if (nextPage <= totalPages) {
+      const { results } = await fetchMovies(nextPage);
+      setMovies(prevMovies => [...prevMovies, ...results]);
+      setPage(nextPage);
+    }
   };
 
   const handleSearchQuery = async (query: string) => {
@@ -143,12 +162,6 @@ const Index = () => {
       setSelectedMedia(null);
       setSelectedMediaDetails(null);
     }
-  };
-
-  const loadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchMovies(nextPage);
   };
 
   const closePlayer = () => {
@@ -364,7 +377,7 @@ const Index = () => {
           ))}
         </div>
 
-        {movies.length > 0 && (
+        {movies.length > 0 && page < totalPages && (
           <div className="flex justify-center mt-8 mb-12">
             <Button
               onClick={loadMore}

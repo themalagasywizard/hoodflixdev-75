@@ -39,5 +39,8 @@ export const fetchMovies = async (page: number = 1) => {
     `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=${page}`
   );
   const data = await response.json();
-  return data.results || [];
+  return {
+    results: data.results || [],
+    total_pages: data.total_pages || 1
+  };
 };
