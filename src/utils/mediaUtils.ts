@@ -11,22 +11,26 @@ export const filterCategory = async (categoryId: string, page: number = 1) => {
   };
 };
 
-export const fetchTVSeries = async () => {
+export const fetchTVSeries = async (page: number = 1) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_null_first_air_dates=false`
+    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&include_null_first_air_dates=false&page=${page}`
   );
   const data = await response.json();
-  // Filter out any items that don't have first_air_date (these might be movies)
-  return (data.results || []).filter((item: any) => item.first_air_date);
+  return {
+    results: (data.results || []).filter((item: any) => item.first_air_date),
+    total_pages: data.total_pages || 1
+  };
 };
 
-export const fetchTVSeriesByCategory = async (categoryId: string) => {
+export const fetchTVSeriesByCategory = async (categoryId: string, page: number = 1) => {
   const response = await fetch(
-    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&language=en-US&sort_by=popularity.desc&include_null_first_air_dates=false`
+    `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=${categoryId}&language=en-US&sort_by=popularity.desc&include_null_first_air_dates=false&page=${page}`
   );
   const data = await response.json();
-  // Filter out any items that don't have first_air_date (these might be movies)
-  return (data.results || []).filter((item: any) => item.first_air_date);
+  return {
+    results: (data.results || []).filter((item: any) => item.first_air_date),
+    total_pages: data.total_pages || 1
+  };
 };
 
 export const handleSearch = async (query: string) => {
@@ -44,7 +48,6 @@ export const fetchMovies = async (page: number = 1) => {
     `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=${page}`
   );
   const data = await response.json();
-  // Filter out any items that don't have release_date (these might be TV shows)
   return {
     results: (data.results || []).filter((item: any) => item.release_date),
     total_pages: data.total_pages || 1

@@ -110,32 +110,45 @@ const Index = () => {
     setPage(1);
   };
 
+  const handleFetchTVSeries = async () => {
+    const { results, total_pages } = await fetchTVSeries();
+    setMovies(results);
+    setTotalPages(total_pages);
+    setSelectedCategory('tv-all');
+    setPage(1);
+  };
+
+  const handleFetchTVSeriesByCategory = async (categoryId: string) => {
+    const { results, total_pages } = await fetchTVSeriesByCategory(categoryId);
+    setMovies(results);
+    setTotalPages(total_pages);
+    setSelectedCategory(`tv-${categoryId}`);
+    setPage(1);
+  };
+
   const loadMore = async () => {
     const nextPage = page + 1;
     if (nextPage <= totalPages) {
       let newResults;
+      
       if (selectedCategory === 'all') {
         const { results } = await fetchMovies(nextPage);
+        newResults = results;
+      } else if (selectedCategory === 'tv-all') {
+        const { results } = await fetchTVSeries(nextPage);
+        newResults = results;
+      } else if (selectedCategory.startsWith('tv-')) {
+        const categoryId = selectedCategory.replace('tv-', '');
+        const { results } = await fetchTVSeriesByCategory(categoryId, nextPage);
         newResults = results;
       } else {
         const { results } = await filterCategory(selectedCategory, nextPage);
         newResults = results;
       }
+      
       setMovies(prevMovies => [...prevMovies, ...newResults]);
       setPage(nextPage);
     }
-  };
-
-  const handleFetchTVSeries = async () => {
-    const results = await fetchTVSeries();
-    setMovies(results);
-    setPage(1);
-  };
-
-  const handleFetchTVSeriesByCategory = async (categoryId: string) => {
-    const results = await fetchTVSeriesByCategory(categoryId);
-    setMovies(results);
-    setPage(1);
   };
 
   const handleSearchQuery = async (query: string) => {
