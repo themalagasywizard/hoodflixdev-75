@@ -93,23 +93,39 @@ const Index = () => {
     setMovies(data.results || []);
   };
 
-  const fetchMovies = async (pageNum = 1) => {
-    try {
-      const responses = await Promise.all([
-        fetch(`https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc&page=${pageNum}`),
-      ]);
-      
-      const data = await Promise.all(responses.map(r => r.json()));
-      const newMovies = data.flatMap(d => d.results);
-      
-      if (pageNum === 1) {
-        setMovies(newMovies);
-      } else {
-        setMovies(prev => [...prev, ...newMovies]);
-      }
-    } catch (error) {
-      console.error('Error fetching movies:', error);
+  const handleFilterCategory = async (categoryId: string) => {
+    const results = await filterCategory(categoryId);
+    setMovies(results);
+  };
+
+  const handleFetchTVSeries = async () => {
+    const results = await fetchTVSeries();
+    setMovies(results);
+  };
+
+  const handleFetchTVSeriesByCategory = async (categoryId: string) => {
+    const results = await fetchTVSeriesByCategory(categoryId);
+    setMovies(results);
+  };
+
+  const handleSearchQuery = async (query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      const results = await handleSearch(query);
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
     }
+  };
+
+  const handleMediaClick = async (media: Movie) => {
+    setSelectedMedia(media);
+    const type = media.media_type || 'movie';
+    const response = await fetch(
+      `https://api.themoviedb.org/3/${type}/${media.id}?api_key=${apiKey}`
+    );
+    const details = await response.json();
+    setSelectedMediaDetails(details);
   };
 
   const loadMore = () => {
@@ -155,31 +171,10 @@ const Index = () => {
     setIsDyslexicFont(!isDyslexicFont);
   };
 
-  const handleMediaClick = async (media: Movie) => {
-    setSelectedMedia(media);
-    const type = media.media_type || 'movie';
-    const response = await fetch(
-      `https://api.themoviedb.org/3/${type}/${media.id}?api_key=${apiKey}`
-    );
-    const details = await response.json();
-    setSelectedMediaDetails(details);
-  };
-
   const handleEpisodeSelect = (seasonNum: number, episodeNum: number) => {
     if (selectedMedia) {
       playMedia(selectedMedia.id, 'tv');
     }
-  };
-
-  const handleSearch = async (query: string) => {
-    if (!query.trim()) return [];
-    
-    const apiKey = '650ff50a48a7379fd245c173ad422ff8';
-    const response = await fetch(
-      `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`
-    );
-    const data = await response.json();
-    return data.results || [];
   };
 
   if (!isAuthenticated) {
@@ -206,9 +201,9 @@ const Index = () => {
               categories={categories}
               seriesCategories={seriesCategories}
               onShowAll={showAllCategories}
-              onFilterCategory={filterCategory}
-              onFetchTVSeries={fetchTVSeries}
-              onFetchTVSeriesByCategory={fetchTVSeriesByCategory}
+              onFilterCategory={handleFilterCategory}
+              onFetchTVSeries={handleFetchTVSeries}
+              onFetchTVSeriesByCategory={handleFetchTVSeriesByCategory}
             />
           </nav>
 
@@ -277,8 +272,7 @@ const Index = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    handleSearch(e.target.value);
+                    handleSearchQuery(e.target.value);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') {
