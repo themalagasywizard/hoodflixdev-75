@@ -235,7 +235,6 @@ const Index = () => {
               alt="iHUB" 
               className="h-8 md:h-10"
             />
-            <span className="ml-2 text-xl font-bold text-[#ea384c]">iHUB</span>
           </div>
           
           <nav className="flex-1 mx-8">
