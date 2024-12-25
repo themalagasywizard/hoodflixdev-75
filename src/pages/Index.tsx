@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, ArrowLeft, Star, X } from 'lucide-react';
 import StarryBackground from '../components/StarryBackground';
-import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
 import MediaDetails from '../components/MediaDetails';
 import PasswordAuth from '../components/PasswordAuth';
@@ -30,7 +29,6 @@ const Index = () => {
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [viewerCount, setViewerCount] = useState(500);
   const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
   const [selectedMediaDetails, setSelectedMediaDetails] = useState<any | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -397,8 +395,6 @@ const Index = () => {
           </span>
         </p>
       </footer>
-
-      <ViewerCount />
     </div>
   );
 };

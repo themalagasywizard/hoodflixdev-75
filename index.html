@@ -85,24 +85,6 @@
             opacity: 0;
             animation: fadeIn 0.5s ease-out forwards;
         }
-
-        /* Enhanced viewer count */
-        #visit-count {
-            position: fixed;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 0.75rem 1.5rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 10px rgba(234, 56, 76, 0.3);
-            z-index: 100;
-            opacity: 0;
-            animation: fadeIn 1s ease-out forwards;
-            backdrop-filter: blur(5px);
-        }
     </style>
 </head>
 <body>
@@ -265,25 +247,11 @@
                     categoryTitle.textContent = translations[lang][name.toLowerCase()] || name;
                 }
             });
-
-            // Update viewer count text
-            const count = document.getElementById('visit-count').textContent.split(' ')[0];
-            document.getElementById('visit-count').textContent = `${count} ${translations[lang].watching}`;
         }
 
         function toggleDyslexicFont() {
             document.body.classList.toggle('dyslexic');
             localStorage.setItem('dyslexicFont', document.body.classList.contains('dyslexic'));
-        }
-
-        // Simulated viewer count (since Firebase config is missing)
-        let viewerCount = Math.floor(Math.random() * 1000) + 500;
-        
-        function updateViewerCount() {
-            viewerCount += Math.floor(Math.random() * 3);
-            const currentLang = document.documentElement.lang || 'en';
-            document.getElementById('visit-count').textContent = 
-                `${viewerCount} ${translations[currentLang].watching}`;
         }
 
         // Initialize
@@ -297,10 +265,6 @@
             // Start on home tab
             showAllCategories();
             
-            // Start viewer count updates
-            setInterval(updateViewerCount, 5000);
-            updateViewerCount();
-
             // Block ads
             blockAds();
 
