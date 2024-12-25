@@ -5,7 +5,9 @@ import ViewerCount from '../components/ViewerCount';
 import Settings from '../components/Settings';
 import MediaDetails from '../components/MediaDetails';
 import PasswordAuth from '../components/PasswordAuth';
+import MediaNavigation from '../components/MediaNavigation';
 import { Button } from '@/components/ui/button';
+import { filterCategory, fetchTVSeries, fetchTVSeriesByCategory, handleSearch } from '../utils/mediaUtils';
 
 interface Movie {
   id: string;
@@ -83,6 +85,14 @@ const Index = () => {
     fetchMovies();
   }, []);
 
+  const showAllCategories = async () => {
+    const response = await fetch(
+      `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&language=en-US&sort_by=popularity.desc`
+    );
+    const data = await response.json();
+    setMovies(data.results || []);
+  };
+
   const fetchMovies = async (pageNum = 1) => {
     try {
       const responses = await Promise.all([
@@ -137,6 +147,41 @@ const Index = () => {
     }
   };
 
+  const handleLanguageChange = (language: string) => {
+    setCurrentLanguage(language);
+  };
+
+  const toggleDyslexicFont = () => {
+    setIsDyslexicFont(!isDyslexicFont);
+  };
+
+  const handleMediaClick = async (media: Movie) => {
+    setSelectedMedia(media);
+    const type = media.media_type || 'movie';
+    const response = await fetch(
+      `https://api.themoviedb.org/3/${type}/${media.id}?api_key=${apiKey}`
+    );
+    const details = await response.json();
+    setSelectedMediaDetails(details);
+  };
+
+  const handleEpisodeSelect = (seasonNum: number, episodeNum: number) => {
+    if (selectedMedia) {
+      playMedia(selectedMedia.id, 'tv');
+    }
+  };
+
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) return [];
+    
+    const apiKey = '650ff50a48a7379fd245c173ad422ff8';
+    const response = await fetch(
+      `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}`
+    );
+    const data = await response.json();
+    return data.results || [];
+  };
+
   if (!isAuthenticated) {
     return <PasswordAuth onAuthenticated={() => setIsAuthenticated(true)} />;
   }
@@ -157,53 +202,14 @@ const Index = () => {
           </div>
           
           <nav className="flex-1 mx-8">
-            <Menubar className="bg-transparent border-none">
-              <MenubarMenu>
-                <MenubarTrigger className="text-white hover:text-[#ea384c] transition-all duration-300">
-                  Movies
-                </MenubarTrigger>
-                <MenubarContent className="bg-[#1a1a1a] border-[#2a2a2a]">
-                  <MenubarItem
-                    className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
-                    onClick={showAllCategories}
-                  >
-                    All Movies
-                  </MenubarItem>
-                  {Object.entries(categories).map(([id, name]) => (
-                    <MenubarItem
-                      key={id}
-                      className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
-                      onClick={() => filterCategory(id)}
-                    >
-                      {name}
-                    </MenubarItem>
-                  ))}
-                </MenubarContent>
-              </MenubarMenu>
-
-              <MenubarMenu>
-                <MenubarTrigger className="text-white hover:text-[#ea384c] transition-all duration-300 ml-4">
-                  Series
-                </MenubarTrigger>
-                <MenubarContent className="bg-[#1a1a1a] border-[#2a2a2a] max-h-[70vh] overflow-y-auto">
-                  <MenubarItem
-                    className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
-                    onClick={fetchTVSeries}
-                  >
-                    All Series
-                  </MenubarItem>
-                  {Object.entries(seriesCategories).map(([id, name]) => (
-                    <MenubarItem
-                      key={id}
-                      className="text-white hover:text-[#ea384c] hover:bg-[#2a2a2a] cursor-pointer"
-                      onClick={() => fetchTVSeriesByCategory(id)}
-                    >
-                      {name}
-                    </MenubarItem>
-                  ))}
-                </MenubarContent>
-              </MenubarMenu>
-            </Menubar>
+            <MediaNavigation
+              categories={categories}
+              seriesCategories={seriesCategories}
+              onShowAll={showAllCategories}
+              onFilterCategory={filterCategory}
+              onFetchTVSeries={fetchTVSeries}
+              onFetchTVSeriesByCategory={fetchTVSeriesByCategory}
+            />
           </nav>
 
           <div className="flex items-center space-x-4">
