@@ -40,8 +40,15 @@ const MediaDetails = ({
         const data = await response.json();
         
         if (data.seasons && data.seasons.length > 0) {
-          setSeasons(data.seasons);
-          handleSeasonSelect(data.seasons[0].season_number);
+          // Filter out season 0 and sort seasons
+          const filteredSeasons = data.seasons
+            .filter((season: any) => season.season_number > 0)
+            .sort((a: any, b: any) => a.season_number - b.season_number);
+          
+          setSeasons(filteredSeasons);
+          if (filteredSeasons.length > 0) {
+            handleSeasonSelect(filteredSeasons[0].season_number);
+          }
         }
       } catch (error) {
         console.error('Error fetching seasons:', error);
