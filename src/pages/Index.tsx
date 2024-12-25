@@ -231,11 +231,11 @@ const Index = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
             <img 
-              src="https://i.ibb.co/9ry4Nq8/New-Project-9.png" 
-              alt="iHub" 
+              src="/lovable-uploads/279b9304-fed6-4bfe-9cb8-3906fe8f74d1.png" 
+              alt="iHUB" 
               className="h-8 md:h-10"
             />
-            <span className="ml-2 text-xl font-bold text-[#ea384c]">iHub</span>
+            <span className="ml-2 text-xl font-bold text-[#ea384c]">iHUB</span>
           </div>
           
           <nav className="flex-1 mx-8">
