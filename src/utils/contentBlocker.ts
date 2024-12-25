@@ -38,10 +38,18 @@ const blockAds = () => {
     // Mobile-specific popup selectors
     '[class*="mobile-overlay"]',
     '[class*="mobile-popup"]',
-    '[class*="app-download"]'
+    '[class*="app-download"]',
+    // Additional aggressive selectors for mobile
+    '[class*="modal"]',
+    '[class*="lightbox"]',
+    '[class*="interstitial"]',
+    '[class*="notification"]',
+    '[class*="banner"]',
+    '[class*="float"]',
+    '[class*="sticky"]'
   ];
 
-  // Block inline scripts that create ads
+  // Block inline scripts that create ads and popups
   const blockInlineScripts = () => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -50,7 +58,15 @@ const blockAds = () => {
             const element = node as HTMLElement;
             if (element.tagName === 'SCRIPT') {
               const src = element.getAttribute('src') || '';
-              if (src.includes('ads') || src.includes('analytics') || src.includes('tracking')) {
+              const content = element.textContent || '';
+              if (
+                src.includes('ads') || 
+                src.includes('analytics') || 
+                src.includes('tracking') ||
+                content.includes('popup') ||
+                content.includes('modal') ||
+                content.includes('overlay')
+              ) {
                 element.remove();
               }
             }
@@ -81,6 +97,11 @@ const blockAds = () => {
         return;
       });
     }
+
+    // Block common popup methods
+    window.alert = () => {};
+    window.confirm = () => false;
+    window.prompt = () => null;
   };
 
   // Block mobile-specific redirects
@@ -110,12 +131,31 @@ const blockAds = () => {
     };
   };
 
-  // Remove ads periodically
+  // Remove ads and popups periodically
   const removeAds = () => {
     adSelectors.forEach(selector => {
       document.querySelectorAll(selector).forEach(element => {
         element.remove();
       });
+    });
+
+    // Additional cleanup for mobile
+    document.querySelectorAll('*').forEach(element => {
+      const computedStyle = window.getComputedStyle(element);
+      if (
+        computedStyle.position === 'fixed' ||
+        computedStyle.position === 'sticky'
+      ) {
+        const elementText = element.textContent?.toLowerCase() || '';
+        if (
+          elementText.includes('ad') ||
+          elementText.includes('download') ||
+          elementText.includes('install') ||
+          elementText.includes('subscribe')
+        ) {
+          (element as HTMLElement).remove();
+        }
+      }
     });
   };
 
@@ -127,14 +167,26 @@ const blockAds = () => {
       body .mobile-overlay,
       body .popup-overlay,
       body .app-banner,
-      body .smart-banner {
+      body .smart-banner,
+      body div[class*="modal"],
+      body div[class*="popup"],
+      body div[class*="overlay"],
+      body div[class*="banner"],
+      body div[class*="notification"],
+      body div[class*="interstitial"] {
         display: none !important;
         opacity: 0 !important;
         pointer-events: none !important;
+        visibility: hidden !important;
+        z-index: -9999 !important;
       }
       body {
         overflow: auto !important;
         position: static !important;
+        touch-action: auto !important;
+      }
+      html {
+        overflow: auto !important;
       }
     `;
     document.head.appendChild(style);
@@ -149,16 +201,24 @@ const blockAds = () => {
     
     // Run removeAds initially and set up interval
     removeAds();
-    setInterval(removeAds, 1000);
+    setInterval(removeAds, 500); // Increased frequency for more aggressive blocking
 
     // Additional Safari-specific handling
     if (navigator.userAgent.includes('Safari')) {
       document.addEventListener('touchstart', (e) => {
-        if ((e.target as HTMLElement).closest('[class*="popup"], [class*="overlay"]')) {
+        if ((e.target as HTMLElement).closest('[class*="popup"], [class*="overlay"], [class*="modal"], [class*="banner"]')) {
           e.preventDefault();
+          e.stopPropagation();
         }
-      }, { passive: false });
+      }, { passive: false, capture: true });
     }
+
+    // Prevent scroll locking
+    Object.defineProperty(document.body.style, 'overflow', {
+      configurable: true,
+      get: () => 'auto',
+      set: () => 'auto'
+    });
   };
 
   // Start blocking on load
