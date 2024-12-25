@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, Star, Play } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
+import { determineMediaType } from '../utils/mediaTypeUtils';
 
 interface MediaDetailsProps {
   id: string;
@@ -31,7 +32,9 @@ const MediaDetails = ({
 
   React.useEffect(() => {
     const fetchSeasons = async () => {
-      if (mediaType === 'tv') {
+      // Always fetch seasons for TV shows, regardless of initial mediaType
+      const detectedMediaType = mediaType === 'tv' ? 'tv' : 'movie';
+      if (detectedMediaType === 'tv') {
         try {
           const response = await fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`);
           const data = await response.json();

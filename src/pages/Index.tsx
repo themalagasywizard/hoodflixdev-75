@@ -8,14 +8,17 @@ import PasswordAuth from '../components/PasswordAuth';
 import MediaNavigation from '../components/MediaNavigation';
 import { Button } from '@/components/ui/button';
 import { filterCategory, fetchTVSeries, fetchTVSeriesByCategory, handleSearch, fetchMovies } from '../utils/mediaUtils';
+import { determineMediaType } from '../utils/mediaTypeUtils';
 
 interface Movie {
   id: string;
-  title: string;
+  title?: string;
   name?: string;
   poster_path: string;
   media_type?: string;
-  first_air_date?: string;  // Added this property
+  first_air_date?: string;
+  number_of_seasons?: number;
+  episode_run_time?: number[];
 }
 
 const Index = () => {
@@ -121,10 +124,7 @@ const Index = () => {
 
   const handleMediaClick = async (media: Movie) => {
     setSelectedMedia(media);
-    // Improved media type detection logic
-    const mediaType = media.media_type || 
-                     (media.name ? 'tv' : 'movie') || 
-                     (media.first_air_date ? 'tv' : 'movie');
+    const mediaType = determineMediaType(media);
     
     try {
       const response = await fetch(
@@ -136,8 +136,7 @@ const Index = () => {
       }
       
       const details = await response.json();
-      // Set the correct media type in the details
-      details.media_type = mediaType;
+      details.media_type = mediaType; // Ensure media_type is set correctly
       setSelectedMediaDetails(details);
     } catch (error) {
       console.error('Error fetching media details:', error);
