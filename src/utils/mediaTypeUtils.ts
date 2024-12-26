@@ -1,7 +1,7 @@
 export const determineMediaType = (media: any): 'movie' | 'tv' => {
   // Special case for known movies
   const knownMovies = {
-    'tt0208092': 'movie', // Snatch (2000)
+    '107': 'movie', // Snatch (2000) TMDB ID
   };
 
   if (media.id && knownMovies[media.id]) {
