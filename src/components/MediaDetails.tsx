@@ -4,6 +4,7 @@ import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { determineMediaType } from '../utils/mediaTypeUtils';
+import { getVideoUrl } from '../utils/videoUrlUtils';
 
 interface MediaDetailsProps {
   id: string;
@@ -99,7 +100,7 @@ const MediaDetails = ({
     if (onSelectEpisode) {
       onSelectEpisode(seasonNum, episodeNum);
     }
-    const url = `https://vidsrc.me/embed/tv?tmdb=${id}&season=${seasonNum}&episode=${episodeNum}`;
+    const url = getVideoUrl(id, 'tv', seasonNum, episodeNum);
     createVideoIframe(url);
     onBack(); // Close the details window
   };
@@ -108,7 +109,7 @@ const MediaDetails = ({
     if (seasons.length > 0 && selectedSeason !== null) {
       handleEpisodeSelect(selectedSeason, 1);
     } else {
-      const url = `https://vidsrc.me/embed/movie?tmdb=${id}`;
+      const url = getVideoUrl(id, 'movie');
       createVideoIframe(url);
       onBack(); // Close the details window
     }
